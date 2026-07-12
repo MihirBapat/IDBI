@@ -30,5 +30,10 @@ def load_yaml(name: str) -> Any:
 
 
 def file_sha(name: str) -> str:
-    """First 12 hex of the sha256 of the config file bytes — the version pin."""
-    return hashlib.sha256(_read_bytes(name)).hexdigest()[:12]
+    """First 12 hex of the sha256 of the config file — the version pin.
+
+    Line endings are normalized to LF before hashing so the pin is stable across
+    platforms and git checkouts (autocrlf must not change a config's identity).
+    """
+    normalized = _read_bytes(name).replace(b"\r\n", b"\n")
+    return hashlib.sha256(normalized).hexdigest()[:12]
