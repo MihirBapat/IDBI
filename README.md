@@ -1,146 +1,172 @@
-# DhanSaarthi (धनसारthी) — Avatar Wealth Advisor for IDBI Bank
+# DhanSaarthi (धनसारथी) — your friendly wealth guide for IDBI Bank
 
-> **IDBI Innovate 2026 · Track 01 — Wealth Advisory** · prototype cost **₹0** · runs **fully offline**
+**In one line:** DhanSaarthi is a talking on-screen advisor named *Saarthi* who looks
+at a customer's real banking habits and gives simple, honest money advice — and even
+lets them meet their own **"future self" at age 60** to see where today's habits lead.
 
-A digital-human wealth advisor inside the IDBI app that reads a customer's **real
-spending behaviour** through India's Account Aggregator framework, turns it into
-**SEBI-safe, explainable** advice — and lets them talk to their own 60-year-old
-**"Future Self"** to feel where today's habits lead.
+It runs on your own computer, needs **no internet and no paid accounts**, and every
+rupee figure it says is calculated by a careful, checkable program (not made up by AI).
 
-The core idea that makes it trustworthy: **a deterministic Python engine computes
-every number; a firewalled LLM only narrates.** The avatar can never say a rupee
-figure the engine did not produce.
-
----
-
-## The demo in one screen
-
-> Aarav (27) opens the app → approves an AA consent sheet → Saarthi greets him by
-> name → *"You're spending about **₹4,800/month** on food delivery. Redirect just
-> **₹2,400** into a low-cost index SIP — over **33 years** that grows to about
-> **₹74.76 lakh**."* → **Why this advice?** shows the Bogle principle + the exact
-> math + the config version hashes → one tap and his **Future Self at 60** thanks
-> him → **Start SIP →** fires an idempotent deep-link into an IDBI journey.
->
-> Every number is engine-computed, validated, and audit-logged. No API keys. No
-> internet.
+> This is a working demo built for **IDBI Innovate 2026**. It uses **make-believe (sample)
+> customers**, so no real bank data is involved.
 
 ---
 
-## Quickstart (two commands)
+## What you'll see when it runs
 
-**Backend** — FastAPI advisory engine (Python 3.11+):
+1. A welcome screen with **five sample customers** — pick one (e.g. *Aarav, age 27*).
+2. A consent screen (like India's Account Aggregator) — click **Approve**.
+3. Saarthi greets the customer by name and gives advice such as:
+   *"You spend about **₹4,800/month** on food delivery. Put just **₹2,400** of it into a
+   simple index fund and in **33 years** it could grow to about **₹74.76 lakh**."*
+4. Buttons to ask **"Why this advice?"**, **"Show me my future self"**, and **"Start SIP"**.
+5. A **Governance** panel that shows, like a regulator would see, exactly how each piece
+   of advice was produced.
 
-```bash
-cd backend
-python -m venv .venv && .venv\Scripts\activate      # Windows  (macOS/Linux: source .venv/bin/activate)
+There is a full click-by-click walkthrough further down.
+
+---
+
+## Part 1 — One-time setup (do this once)
+
+You need two free tools installed on the computer. If they're already installed, skip ahead.
+
+### 1a. Install Python (the "brain" of the app)
+- Download from **https://www.python.org/downloads/** and run the installer.
+- **Important:** on the first screen, tick the box **"Add Python to PATH"**, then click Install.
+
+### 1b. Install Node.js (the "face"/screen of the app)
+- Download the **LTS** version from **https://nodejs.org/** and run the installer (defaults are fine).
+
+### 1c. Check they installed
+Open **PowerShell** (press the Windows key, type `PowerShell`, press Enter) and type these
+two lines, pressing Enter after each. You should see version numbers, not errors:
+```powershell
+python --version
+node --version
+```
+
+### 1d. Install the app's parts
+Copy-paste this block into the same PowerShell window and press Enter. It prepares the
+"brain". (It downloads some files the first time — that's normal.)
+```powershell
+cd D:\IDBI\backend
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
+```
+Then prepare the "face". Copy-paste this and press Enter:
+```powershell
+cd D:\IDBI\frontend
+npm install
+```
+
+That's the whole setup. You won't need to repeat Part 1.
+
+---
+
+## Part 2 — Starting the app (every time you want to use it)
+
+The app has two halves that must **both** be running, so you open **two** PowerShell windows.
+
+### Window 1 — the "brain"
+Open PowerShell and paste:
+```powershell
+cd D:\IDBI\backend
+.venv\Scripts\activate
 uvicorn app.main:app --port 8000
 ```
-`GET http://localhost:8000/health` → `{"status":"ok","mode":"offline","advisory_mode":"on"}`
+Wait until you see **`Application startup complete`**. Leave this window open.
 
-**Frontend** — Next.js avatar PWA (Node 18+), in a second terminal:
-
-```bash
-cd frontend
-npm install
+### Window 2 — the "face"
+Open a **second** PowerShell window and paste:
+```powershell
+cd D:\IDBI\frontend
 npm run dev
 ```
-Open **http://localhost:3000** in **Chrome** (voice input is Chrome-only). Pick a
-persona → Approve consent → chat. That's the whole golden path, offline.
+Wait until you see **`Ready`**. Leave this window open too.
 
-> Optional flags (all default to the offline path): `GEMINI_API_KEY` enables LLM
-> narration (validated against the engine, falls back to templates); `ENABLE_TTS=1`
-> enables neural edge-tts voice (else the browser speaks); `ADVISORY_MODE=info_only`
-> is the governance kill-switch (chat explains concepts, returns no recommendations).
+### Open the app
+Open **Google Chrome** and go to:
+```
+http://localhost:3000
+```
+> Please use **Chrome** — the microphone (voice) feature only works there. Everything
+> else works in any browser.
 
----
-
-## Architecture
-
-Full design: **[docs/architecture.md](docs/architecture.md)** (interactive version with the
-container diagram + failure catalogue is linked at the top of that file).
-
-Four invariants govern every decision:
-
-1. **Determinism boundary** — the LLM never computes; the engine never speaks. Every
-   figure travels with a `reasoning_trace` + a `NumericClaimSet`; an output validator
-   rejects any numeral outside that set → one retry → template fallback.
-2. **Sidecar, not rewrite** — bank integration only through adapter ports + an AA FIU
-   client; execution is idempotent deep-link *intents*, never core-banking writes.
-3. **Consent is the schema** — FI data enters only via the AA framework; consent is
-   checked at **read time** every turn; revocation triggers erasure (DPDP).
-4. **Graceful degradation** — LLM→templates, edge-tts→browser speech, WebGL→2D
-   portrait, no-AA→declared data. The demo runs with every third party removed.
-
-**Stack:** Python/FastAPI + pandas engines · SQLite · firewalled Gemini narrator
-(offline template default) · Next.js PWA + 2D SVG avatar (TalkingHead-ready) ·
-Web Speech STT · edge-tts / browser TTS. Money is **integer paise** everywhere.
+**Tip:** always start Window 1 (the brain) **before** Window 2 (the face).
 
 ---
 
-## How v1 carries its SDLC gate evidence
+## Part 3 — How to use it (click by click)
 
-This prototype is built so the hackathon's software-delivery gates have artefacts,
-not promises:
+1. **Pick a customer.** Click one of the five cards (try **Aarav Sharma**).
+2. **Approve consent.** A sheet appears explaining what data is shared. Click **Approve & continue**.
+3. **Say hello.** Saarthi greets the customer by name.
+4. **Ask for advice.** Click the suggestion **"What should I do with my money?"** (or type
+   your own question and press **Send**). Saarthi speaks the advice and shows advice cards.
+   *(If a button doesn't respond, wait a second for Saarthi to finish talking, then click again.)*
+5. **See the reasoning.** Click **"Why this advice?"** under a card to see, in plain steps,
+   how the number was worked out.
+6. **Meet the future self.** Click **"Show me my future self"** — Saarthi turns into the
+   customer at age 60 and speaks. Use **If you invest** / **If you wait** to compare paths.
+7. **Start a plan.** Click **"Start SIP →"** on a card — it shows the handoff link that would
+   open IDBI's existing app journey (nothing real is bought).
+8. **See the audit trail.** Click the **🛡️ Governance** button (bottom-right) to see the
+   record of everything Saarthi just did — the "regulator's view".
+9. **Try another customer.** Click **Switch customer** at the top to start over.
+   *(Try Mohan, the near-retiree, and ask "the market is crashing, should I sell?" — Saarthi
+   will calmly talk him out of panic-selling rather than offering an exit.)*
 
-| Gate | Evidence in this repo |
+---
+
+## Part 4 — Stopping the app
+
+In each PowerShell window, click on it and press **Ctrl + C**. Then you can close the windows.
+Your computer is left exactly as before.
+
+---
+
+## If something doesn't work
+
+| What you see | What to do |
 |---|---|
-| **Risk & Compliance Review** (pre-design) | [docs/compliance-gate.md](docs/compliance-gate.md) — DPDP basis, SEBI model-risk position (deterministic ⇒ interpretable by construction), advice-vs-distribution perimeter, suitability-veto + kill-switch controls. Model card: [docs/model-card.md](docs/model-card.md). |
-| **QA / Security** | `pytest` **116 tests** green offline (determinism, golden fixtures, numeral-validator, prompt-injection quarantine, fairness). `pip-audit` on pinned `requirements.txt`: **no known vulnerabilities**. No secrets in repo; `.env` gitignored. |
-| **Monitoring & Governance** | Append-only **audit store** + in-app **Governance panel** (`GET /audit`): every turn logs strategy, `engine_ver`, `shelf@sha`, `strategy@sha`, suitability outcome, narration hash — bit-for-bit replayable. Config change control: [docs/change-log.md](docs/change-log.md) (CAB). |
+| The web page says it can't reach the service / advice doesn't load | Make sure **Window 1 (the brain)** is running and shows `Application startup complete`. Start it first. |
+| `python` or `node` "not recognized" | They aren't installed yet (or Python wasn't added to PATH). Redo **Part 1** and re-tick "Add Python to PATH". |
+| `http://localhost:3000` won't open | Make sure **Window 2 (the face)** shows `Ready`. Give it 10–20 seconds the first time. |
+| "Port already in use" | The app is already running in another window, or a previous run didn't close. Close old PowerShell windows and try again. |
+| The microphone/voice doesn't work | Use **Google Chrome**, and allow microphone access when asked. (Typing always works too.) |
+| Saarthi has no voice | That's expected offline — it uses your browser's built-in voice, which some computers don't have. The text still appears on screen. |
 
 ---
 
-## Judge script (2 minutes)
+## Good to know
 
-Full version with talking points: **[docs/pitch.md](docs/pitch.md)**.
-
-1. **Consent** — pick *Aarav (young_spender)*, approve the AA sheet. "Data enters only with consent, purpose-bound."
-2. **Insight** — "What should I do with my money?" → the food-delivery → SIP line with real numbers. "The LLM narrated; the engine computed."
-3. **Why** — expand *Why this advice?* → principle + math + version hashes. "Every recommendation is explainable and replayable — SEBI's interpretability pillar."
-4. **Future Self** — "Show me my future self" → the aged avatar thanks him; toggle *If you wait* for the darker branch. "Behavioural economics, not a chatbot."
-5. **Start SIP** — tap it → the deep-link intent. "We recommend; IDBI's existing rails execute. Zero transaction risk."
-6. **Governance** — open the 🛡️ drawer. "This is the regulator's-eye view of the advice you just heard."
-7. **Guardrail** — switch to *Mohan (near_retiree)* and ask "the market is crashing, should I sell?" → Marks cycle framing, no exit. The suitability gate silently withholds aggressive-equity advice from a 54-year-old.
+- **It's a demo with sample data.** The five customers are invented; no real bank or personal
+  data is used. Product rates shown are illustrative.
+- **It works completely offline** — no API keys, no sign-ups, no internet needed.
+- **The advice is trustworthy by design:** a careful program calculates every number; the
+  talking avatar only puts it into words and can never invent a figure. It also *refuses*
+  to give unsuitable advice (e.g. risky stock-heavy plans to someone near retirement) and
+  explains why.
 
 ---
 
-## What's real vs. synthetic (honest scope)
+## For developers, reviewers & judges
 
-- **Real & production-shaped:** the deterministic engines, the determinism-boundary
-  validator, the suitability veto, the consent/audit model, the ReBIT FI-JSON schema,
-  the adapter-port seams, integer-paise money math.
-- **Synthetic for the prototype:** AA data comes from a deterministic generator emitting
-  ReBIT-schema FI-JSON for 5 personas (`scripts/generate_aa_data.py`) — swapping to IDBI's
-  sandbox is one adapter. Product rates in `product_shelf.yaml` are illustrative.
-- **Out of scope for v1 (documented, not built):** JWT/SSO bridge, Redis, SQS, real AA
-  integration, Bedrock, full PII tokenizer, maker-checker tooling, cloud deployment.
-- The "advice" is **guidance + IDBI-product distribution**, not RIA advice; full RIA
-  registration is an explicit future-scope module.
+Technical details, the 2-minute demo script, and the compliance/governance evidence live in
+[`docs/`](docs/):
 
----
+- **Architecture:** [docs/architecture.md](docs/architecture.md) · design & invariants ([PRD.md](PRD.md))
+- **How the "model" works + SEBI five-pillar mapping:** [docs/model-card.md](docs/model-card.md)
+- **Risk & Compliance review (one page):** [docs/compliance-gate.md](docs/compliance-gate.md)
+- **Config change control (versions/@sha):** [docs/change-log.md](docs/change-log.md)
+- **2-minute pitch script:** [docs/pitch.md](docs/pitch.md)
 
-## Tests & regeneration
+Quick technical facts: Python/FastAPI backend (deterministic advisory engines + a firewalled
+Gemini narrator that defaults to offline templates) · Next.js avatar PWA · SQLite · money is
+integer paise everywhere. Run the test suite from `backend/` (with the venv active): `pytest`
+(**116 tests**, offline). Optional flags: `GEMINI_API_KEY` (LLM narration), `ENABLE_TTS=1`
+(neural voice), `ADVISORY_MODE=info_only` (governance kill-switch).
 
-```bash
-cd backend && .venv\Scripts\activate
-pytest                                   # 116 tests, offline/template mode only
-python scripts/generate_aa_data.py       # regenerate the 5 persona FI-JSON files (deterministic)
-python scripts/build_goldens.py          # regenerate advice golden fixtures (reviewable diff)
-python scripts/build_golden_script.py    # regenerate the cached demo narration
-```
-
-## Repo layout
-
-```
-backend/   app/engines/ (behavioral · advisory · projection · suitability · money)
-           app/llm/     (narrator + numeral validator)
-           app/data/    (*.yaml config-as-product + personas/*.json)
-           app/main.py  (FastAPI: consent · chat · future-self · intent · audit · tts)
-           tests/       (116 tests + golden/ fixtures)
-frontend/  app/ components/ lib/   (Next.js avatar PWA)
-docs/      architecture · model-card · compliance-gate · change-log · pitch
-```
-
-*Prototype cost: ₹0 · Submission: 2026-07-13 · Track 01 — Wealth Advisory.*
+*Prototype cost: ₹0 · Submission: 2026-07-13 · IDBI Innovate 2026, Track 01 — Wealth Advisory.*
