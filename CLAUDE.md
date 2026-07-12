@@ -14,7 +14,7 @@ Scaffold exists as of Part 1. Verified working commands (Windows host):
 - Tests: `pytest` from `backend/` (110 passing as of Part 3). Tests must stay in offline/template mode — never call Gemini or edge-tts.
 - Regenerate synthetic AA data: `python scripts/generate_aa_data.py` from `backend/` → writes `app/data/personas/{persona_id}.json` (deterministic, byte-identical across runs).
 - Regenerate golden advice fixtures: `python scripts/build_goldens.py` from `backend/` → writes `tests/golden/{persona}.json` (advise+screen output; a deliberate config/engine change is a reviewable golden diff).
-- Frontend: `cd frontend && npm install && npm run dev` (Next.js App Router, TS, no Tailwind).
+- Frontend: `cd frontend && npm install && npm run dev` (Next.js 16 App Router, TS, no Tailwind, no external deps/fonts — offline-first). Set `NEXT_PUBLIC_API_BASE` to point at the API (default `http://localhost:8000`). `npm run build` must stay clean. Golden-path demo: start backend + frontend, open `http://localhost:3000`, pick a persona → Approve consent → chat/Future Self/Governance. `frontend/AGENTS.md` warns this Next.js differs from older versions — read `node_modules/next/dist/docs/` before structural changes.
 
 ## 3. Architecture
 
@@ -31,7 +31,7 @@ Non-obvious decisions (rationale in architecture doc §11): modular monolith, no
 
 ## 4. Conventions & workflow
 
-- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 3 (Narration & API) complete** — firewalled narrator + numeral-membership validator + FastAPI/SQLite endpoints landed and gated (110 tests); next is Part 4 (Next.js avatar frontend), see [IMPLEMENTATION.md](IMPLEMENTATION.md). Update this line as parts complete.
+- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 4 (Frontend) complete** — Next.js avatar PWA (consent flow, 2D avatar, chat, Why-trace, Future Self, governance panel) landed and gated; full golden path runs offline. Next is Part 5 (hardening & submission), see [IMPLEMENTATION.md](IMPLEMENTATION.md). Update this line as parts complete.
 - Every feature must move a bank metric (SIP conversion, CASA, cross-sell, RM cost) — think as an IDBI financial manager (RULES.MD).
 - Every engine output must carry a `reasoning_trace` naming the strategy applied (PRD §3A); write pytest cases per persona for each engine before moving on.
 - Every LLM-facing response gets the SEBI disclosure footer appended **in code, not in the prompt**.
