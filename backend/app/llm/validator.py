@@ -14,10 +14,13 @@ import re
 # Ordered alternation: prefer ₹-amounts (with optional lakh/crore), then
 # unit-suffixed numbers (%/years/साल), then bare numbers. Left-to-right, longest
 # meaningful token wins so "₹19 lakh" and "33 years" are captured whole.
+# A number core allows commas only *between* digit groups (thousands
+# separators) — never trailing — so "at 27," yields "27", not "27,".
+_NUM = r"\d+(?:,\d+)*(?:\.\d+)?"
 _TOKEN = re.compile(
-    r"₹\s?\d[\d,]*(?:\.\d+)?(?:\s?(?:lakh|crore|लाख|करोड़))?"
-    r"|\d[\d,]*(?:\.\d+)?\s?(?:%|years|साल|लाख|करोड़|lakh|crore)"
-    r"|\d[\d,]*(?:\.\d+)?"
+    rf"₹\s?{_NUM}(?:\s?(?:lakh|crore|लाख|करोड़))?"
+    rf"|{_NUM}\s?(?:%|years|साल|लाख|करोड़|lakh|crore)"
+    rf"|{_NUM}"
 )
 
 

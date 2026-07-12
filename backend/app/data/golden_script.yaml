@@ -1,0 +1,32 @@
+persona: young_spender
+note: Deterministic template-mode narration for the scripted demo. Regenerate with scripts/build_golden_script.py.
+disclosure: Mutual fund investments are subject to market risks; read all scheme-related documents carefully.
+  This is educational guidance based on your consented data, not individual investment advice under SEBI
+  (Investment Advisers) Regulations.
+turns:
+- intent: GREET
+  prompt: hello
+  text: Namaste Aarav! I'm Saarthi, your IDBI wealth guide. I've read your consented accounts — ask me
+    what to do with your money, or say 'show me my future self'.
+- intent: ADVICE
+  prompt: what should I do with my money?
+  text: You're spending about ₹4,800 a month on food delivery. Redirect just ₹2,400 of it into a low-cost
+    index SIP — over 33 years that could grow to around ₹74.76 lakh. A small habit, a big future.
+- intent: WHY
+  prompt: why this advice?
+  text: Start a low-cost index SIP from your food-delivery spend. This applies Jack Bogle (Vanguard) —
+    low-cost passive indexing; costs matter. You're spending about ₹4,800 a month on food delivery. Redirect
+    just ₹2,400 of it into a low-cost index SIP — over 33 years that could grow to around ₹74.76 lakh.
+    A small habit, a big future.
+- intent: PANIC
+  prompt: the market is crashing, should I sell everything?
+  text: Markets move in cycles, and reacting to a dip usually locks in the loss. Your plan was built for
+    exactly this. Let's revisit your goals and meet your future self before changing anything — no exits
+    today.
+future_self:
+  good:
+  - Because you started a ₹2,400/month SIP at 27, I retired at 60 with ₹74.76 lakh.
+  - That was 33 years of small, automatic investing. Thank you.
+  bad:
+  - You waited 5 years before investing. I reached 60 with only ₹44.3 lakh.
+  - Those years cost us ₹30.46 lakh. I am still working.

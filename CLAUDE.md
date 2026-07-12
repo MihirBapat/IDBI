@@ -11,8 +11,9 @@ Scaffold exists as of Part 1. Verified working commands (Windows host):
 - Backend venv: `cd backend && python -m venv .venv && .venv\Scripts\activate`. Deps are pinned in `backend/requirements.txt` (`pip install -r requirements.txt`).
 - **Never install anything system-wide or globally. If something truly needs a system-level install, STOP and ask the user first** (RULES.MD).
 - Run API: `uvicorn app.main:app --reload` from `backend/` → `GET /health` returns `{"status":"ok","mode":"offline","advisory_mode":"on"}`. Endpoints: `POST /consent`, `DELETE /consent?persona_id=`, `POST /chat`, `GET /future-self`, `POST /intent`, `GET /audit`, `GET /tts`. Env: `GEMINI_API_KEY` (opt-in LLM narration; default offline template), `ADVISORY_MODE=on|info_only` (governance kill-switch), `DHANSAARTHI_DB` (SQLite path; default `dhansaarthi.sqlite`, gitignored), `ENABLE_TTS` (else `/tts` → 503 and frontend uses browser speech).
-- Tests: `pytest` from `backend/` (110 passing as of Part 3). Tests must stay in offline/template mode — never call Gemini or edge-tts.
+- Tests: `pytest` from `backend/` (116 passing as of Part 5). Tests must stay in offline/template mode — never call Gemini or edge-tts.
 - Regenerate synthetic AA data: `python scripts/generate_aa_data.py` from `backend/` → writes `app/data/personas/{persona_id}.json` (deterministic, byte-identical across runs).
+- Regenerate advice golden fixtures: `python scripts/build_goldens.py`; regenerate cached demo narration: `python scripts/build_golden_script.py` (both from `backend/`, deterministic — a config/engine change is a reviewable diff).
 - Regenerate golden advice fixtures: `python scripts/build_goldens.py` from `backend/` → writes `tests/golden/{persona}.json` (advise+screen output; a deliberate config/engine change is a reviewable golden diff).
 - Frontend: `cd frontend && npm install && npm run dev` (Next.js 16 App Router, TS, no Tailwind, no external deps/fonts — offline-first). Set `NEXT_PUBLIC_API_BASE` to point at the API (default `http://localhost:8000`). `npm run build` must stay clean. Golden-path demo: start backend + frontend, open `http://localhost:3000`, pick a persona → Approve consent → chat/Future Self/Governance. `frontend/AGENTS.md` warns this Next.js differs from older versions — read `node_modules/next/dist/docs/` before structural changes.
 
@@ -31,7 +32,7 @@ Non-obvious decisions (rationale in architecture doc §11): modular monolith, no
 
 ## 4. Conventions & workflow
 
-- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 4 (Frontend) complete** — Next.js avatar PWA (consent flow, 2D avatar, chat, Why-trace, Future Self, governance panel) landed and gated; full golden path runs offline. Next is Part 5 (hardening & submission), see [IMPLEMENTATION.md](IMPLEMENTATION.md). Update this line as parts complete.
+- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 5 (Hardening & submission) complete** — offline-demo + fairness tests, cached golden script, pinned deps (pip-audit clean), README + gate-evidence docs; all 5 parts done, `pytest` 116 passing, fresh-clone verified. See [IMPLEMENTATION.md](IMPLEMENTATION.md).
 - Every feature must move a bank metric (SIP conversion, CASA, cross-sell, RM cost) — think as an IDBI financial manager (RULES.MD).
 - Every engine output must carry a `reasoning_trace` naming the strategy applied (PRD §3A); write pytest cases per persona for each engine before moving on.
 - Every LLM-facing response gets the SEBI disclosure footer appended **in code, not in the prompt**.
