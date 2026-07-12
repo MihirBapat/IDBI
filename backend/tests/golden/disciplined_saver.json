@@ -67,11 +67,20 @@
       },
       "strategy_id": "goals_based_stepup",
       "title": "Escalate your disciplined SIP toward your goals",
+      "money_figures": {
+        "stepup": 475000,
+        "income": 9500000,
+        "projection": 708061235
+      },
+      "pct_figures": {},
+      "year_figures": {
+        "horizon": 26
+      },
       "numeric_claims": [
         "₹4,750",
+        "₹95,000",
         "₹70.81 lakh",
         "₹70.81 लाख",
-        "₹95,000",
         "26 years",
         "26 साल",
         "70%",
@@ -105,6 +114,15 @@
       },
       "strategy_id": "markowitz_concentration",
       "title": "Move idle savings into a laddered IDBI FD",
+      "money_figures": {
+        "amount": 30828020,
+        "extra": 1310191
+      },
+      "pct_figures": {
+        "fd_rate": 7.25,
+        "savings_rate": 3.0
+      },
+      "year_figures": {},
       "numeric_claims": [
         "₹3.08 lakh",
         "₹3.08 लाख",
@@ -144,14 +162,21 @@
       },
       "strategy_id": "buffett_9010",
       "title": "Put surplus to work with a Buffett 90/10 split",
+      "money_figures": {
+        "amount": 30828020,
+        "bucket_equity_index": 27745218,
+        "bucket_gilt": 3082802
+      },
+      "pct_figures": {},
+      "year_figures": {},
       "numeric_claims": [
         "₹3.08 lakh",
         "₹3.08 लाख",
-        "90%",
-        "10%",
         "₹2.77 lakh",
         "₹2.77 लाख",
-        "₹30,828"
+        "₹30,828",
+        "90%",
+        "10%"
       ],
       "reasoning_trace": {
         "strategy_id": "buffett_9010",

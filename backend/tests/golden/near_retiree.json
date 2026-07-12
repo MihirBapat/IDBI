@@ -64,17 +64,26 @@
       },
       "strategy_id": "dalio_all_weather",
       "title": "Deploy idle cash into a capital-preserving All-Weather mix",
+      "money_figures": {
+        "amount": 41345455,
+        "bucket_equity_index": 10336364,
+        "bucket_gilt": 12403636,
+        "bucket_gold_sgb": 6201818,
+        "bucket_liquid": 12403636
+      },
+      "pct_figures": {},
+      "year_figures": {},
       "numeric_claims": [
         "₹4.13 lakh",
         "₹4.13 लाख",
-        "25%",
-        "30%",
-        "15%",
         "₹1.03 lakh",
         "₹1.03 लाख",
         "₹1.24 lakh",
         "₹1.24 लाख",
-        "₹62,018"
+        "₹62,018",
+        "25%",
+        "30%",
+        "15%"
       ],
       "reasoning_trace": {
         "strategy_id": "dalio_all_weather",
@@ -102,6 +111,15 @@
       },
       "strategy_id": "markowitz_concentration",
       "title": "Move idle savings into a laddered IDBI FD",
+      "money_figures": {
+        "amount": 41345455,
+        "extra": 1757182
+      },
+      "pct_figures": {
+        "fd_rate": 7.25,
+        "savings_rate": 3.0
+      },
+      "year_figures": {},
       "numeric_claims": [
         "₹4.13 lakh",
         "₹4.13 लाख",
@@ -143,6 +161,11 @@
       },
       "strategy_id": "swensen_diversify",
       "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 900000
+      },
+      "pct_figures": {},
+      "year_figures": {},
       "numeric_claims": [
         "₹9,000",
         "40%",
@@ -157,7 +180,7 @@
           "monthly_income": 9000000
         },
         "math_steps": [
-          "diversified SIP = 10% of income = 900000 paise/mo across {'equity_index': 40.0, 'international_equity': 20.0, 'gilt': 25.0, 'reit': 15.0}"
+          "diversified SIP = 10% of income = 900000 paise/mo"
         ],
         "engine_ver": "advisory-1.0.0",
         "shelf_sha": "ca5f3e3c0df1",

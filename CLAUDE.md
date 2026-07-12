@@ -10,8 +10,8 @@ Scaffold exists as of Part 1. Verified working commands (Windows host):
 
 - Backend venv: `cd backend && python -m venv .venv && .venv\Scripts\activate`. Deps are pinned in `backend/requirements.txt` (`pip install -r requirements.txt`).
 - **Never install anything system-wide or globally. If something truly needs a system-level install, STOP and ask the user first** (RULES.MD).
-- Run API: `uvicorn app.main:app --reload` from `backend/` → `GET /health` returns `{"status":"ok","mode":"offline"}`.
-- Tests: `pytest` from `backend/` (83 passing as of Part 2). Tests must stay in offline/template mode — never call Gemini or edge-tts.
+- Run API: `uvicorn app.main:app --reload` from `backend/` → `GET /health` returns `{"status":"ok","mode":"offline","advisory_mode":"on"}`. Endpoints: `POST /consent`, `DELETE /consent?persona_id=`, `POST /chat`, `GET /future-self`, `POST /intent`, `GET /audit`, `GET /tts`. Env: `GEMINI_API_KEY` (opt-in LLM narration; default offline template), `ADVISORY_MODE=on|info_only` (governance kill-switch), `DHANSAARTHI_DB` (SQLite path; default `dhansaarthi.sqlite`, gitignored), `ENABLE_TTS` (else `/tts` → 503 and frontend uses browser speech).
+- Tests: `pytest` from `backend/` (110 passing as of Part 3). Tests must stay in offline/template mode — never call Gemini or edge-tts.
 - Regenerate synthetic AA data: `python scripts/generate_aa_data.py` from `backend/` → writes `app/data/personas/{persona_id}.json` (deterministic, byte-identical across runs).
 - Regenerate golden advice fixtures: `python scripts/build_goldens.py` from `backend/` → writes `tests/golden/{persona}.json` (advise+screen output; a deliberate config/engine change is a reviewable golden diff).
 - Frontend: `cd frontend && npm install && npm run dev` (Next.js App Router, TS, no Tailwind).
@@ -31,7 +31,7 @@ Non-obvious decisions (rationale in architecture doc §11): modular monolith, no
 
 ## 4. Conventions & workflow
 
-- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 2 (Deterministic core) complete** — behavioral/advisory/projection/suitability engines landed and gated (83 tests); next is Part 3 (narrator + validator + FastAPI endpoints), see [IMPLEMENTATION.md](IMPLEMENTATION.md). Update this line as parts complete.
+- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 3 (Narration & API) complete** — firewalled narrator + numeral-membership validator + FastAPI/SQLite endpoints landed and gated (110 tests); next is Part 4 (Next.js avatar frontend), see [IMPLEMENTATION.md](IMPLEMENTATION.md). Update this line as parts complete.
 - Every feature must move a bank metric (SIP conversion, CASA, cross-sell, RM cost) — think as an IDBI financial manager (RULES.MD).
 - Every engine output must carry a `reasoning_trace` naming the strategy applied (PRD §3A); write pytest cases per persona for each engine before moving on.
 - Every LLM-facing response gets the SEBI disclosure footer appended **in code, not in the prompt**.

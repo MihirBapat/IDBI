@@ -233,6 +233,11 @@ class Recommendation(BaseModel):
     allocation: dict[str, float] = Field(default_factory=dict)
     strategy_id: str
     title: str = ""
+    # Labeled display figures the narrator draws on. Their formatted forms are a
+    # subset of numeric_claims, so any template built from these is claim-safe.
+    money_figures: dict[str, int] = Field(default_factory=dict)   # label -> paise
+    pct_figures: dict[str, float] = Field(default_factory=dict)   # label -> percent
+    year_figures: dict[str, int] = Field(default_factory=dict)    # label -> years
     numeric_claims: list[str] = Field(default_factory=list)
     reasoning_trace: ReasoningTrace
     status: Verdict = "PASS"

@@ -10,7 +10,7 @@ numbers.
 from __future__ import annotations
 
 from app.config import file_sha, load_yaml
-from app.engines.money import format_years, inr_claims, year_claims
+from app.engines.money import format_inr, format_years, inr_claims, year_claims
 from app.schemas import ProjectionLine, ProjectionScript, ReasoningTrace
 
 ENGINE_VER = "projection-1.0.0"
@@ -75,13 +75,15 @@ def future_self(fingerprint, take_advice: bool) -> ProjectionScript:
         monthly = int(round(fingerprint.monthly_income.value * 0.05))
     horizon = max(RETIREMENT_AGE - age, 1)
 
+    age_s, retire_s = str(age), str(RETIREMENT_AGE)
     if take_advice:
         corpus = sip_future_value(monthly, horizon, EQUITY_NOMINAL)
+        amt_s, corpus_s = format_inr(monthly), format_inr(corpus)
         lines = [
             ProjectionLine(
-                text=(f"Because you started a {{amt}}/month SIP at {age}, "
-                      f"I retired at {RETIREMENT_AGE} with {{corpus}}."),
-                numeric_claims=inr_claims(monthly) + inr_claims(corpus),
+                text=(f"Because you started a {amt_s}/month SIP at {age}, "
+                      f"I retired at {RETIREMENT_AGE} with {corpus_s}."),
+                numeric_claims=inr_claims(monthly) + inr_claims(corpus) + [age_s, retire_s],
             ),
             ProjectionLine(
                 text=f"That was {format_years(horizon)} of small, automatic investing. Thank you.",
@@ -94,20 +96,21 @@ def future_self(fingerprint, take_advice: bool) -> ProjectionScript:
             f"FV @ {EQUITY_NOMINAL}% nominal = {corpus} paise",
         ]
         corpus_out = corpus
-        claims = inr_claims(monthly) + inr_claims(corpus) + year_claims(horizon)
+        claims = inr_claims(monthly) + inr_claims(corpus) + year_claims(horizon) + [age_s, retire_s]
     else:
         effective = max(horizon - PROCRASTINATION_YEARS, 0)
         corpus = sip_future_value(monthly, effective, EQUITY_NOMINAL)
         good = sip_future_value(monthly, horizon, EQUITY_NOMINAL)
         cost = good - corpus
+        corpus_s, cost_s = format_inr(corpus), format_inr(cost)
         lines = [
             ProjectionLine(
                 text=(f"You waited {format_years(PROCRASTINATION_YEARS)} before investing. "
-                      f"I reached {RETIREMENT_AGE} with only {{corpus}}."),
-                numeric_claims=inr_claims(corpus) + year_claims(PROCRASTINATION_YEARS),
+                      f"I reached {RETIREMENT_AGE} with only {corpus_s}."),
+                numeric_claims=inr_claims(corpus) + year_claims(PROCRASTINATION_YEARS) + [retire_s],
             ),
             ProjectionLine(
-                text="Those years cost us {cost}. I am still working.",
+                text=f"Those years cost us {cost_s}. I am still working.",
                 numeric_claims=inr_claims(cost),
             ),
         ]
@@ -118,7 +121,7 @@ def future_self(fingerprint, take_advice: bool) -> ProjectionScript:
         ]
         corpus_out = corpus
         claims = (inr_claims(monthly) + inr_claims(corpus) + inr_claims(cost)
-                  + year_claims(PROCRASTINATION_YEARS))
+                  + year_claims(PROCRASTINATION_YEARS) + [retire_s])
 
     # De-duplicate claim strings, preserving order.
     seen: dict[str, None] = {}

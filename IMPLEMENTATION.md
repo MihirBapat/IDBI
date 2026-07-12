@@ -24,10 +24,10 @@ The build is split into **5 self-contained parts** so it can be done across sess
 
 - [x] **Part 1 — Foundation** · gate: servers boot + persona files validate ✅ (backend `/health` boots; 5 persona files validate + reconcile — `pytest` 18 passed)
 - [x] **Part 2 — Deterministic core** · gate: golden fixtures + determinism + suitability ✅ (behavioral/advisory/projection/suitability engines; `pytest` 83 passed; data + goldens byte-identical across runs; near-retiree aggressive-equity veto works)
-- [ ] **Part 3 — Narration & API** · gate: injection/hallucination + API tests
+- [x] **Part 3 — Narration & API** · gate: injection/hallucination + API tests ✅ (template+gemini narrator, numeral-membership validator, FastAPI consent/chat/future-self/intent/audit/tts over SQLite; `pytest` 110 passed)
 - [ ] **Part 4 — Frontend** · gate: golden path in Chrome, offline
 - [ ] **Part 5 — Hardening & submission** · gate: fresh-clone test green
 
-**Current stage:** Part 2 complete — deterministic engines (behavioral, advisory, projection, suitability) landed and gated. Next: [Part 3 — Narration & API](implementation/PART-3-narrator-api.md).
+**Current stage:** Part 3 complete — firewalled narrator + validator + FastAPI/SQLite API landed and gated. Next: [Part 4 — Frontend](implementation/PART-4-frontend.md).
 
 > When resuming: check the tracker for the first unchecked part, open its file, confirm the previous part's gate still passes (`pytest` from `backend/`), then continue.
