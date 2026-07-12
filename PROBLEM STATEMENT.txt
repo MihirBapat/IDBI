@@ -1,0 +1,87 @@
+IDBI Innovate 2026 is a national-level innovation challenge that brings together the brightest minds in India's Startup and 
+FinTech ecosystem to solve real-world banking problems — and build solutions scalable enough for deployment within IDBI Bank
+
+THE WHOLE PROJECT SHOULD BE OF 0 ATLEAST THE PROTOTYPE ONE WHICH SUBMISSION DATE IS JULY 13TH MODAY 
+
+This isn't a sandbox exercise. Selected solutions will follow a structured roadmap, with the best teams earning a direct path
+ for submitting a Proof of Concept within the bank’s sandbox environment.
+
+IDBI Bank shall provide shortlisted participants/teams with sandbox APIs, synthetic banking datasets, cloud infrastructure, 
+and direct access to mentors and digital transformation experts throughout the challenge.
+
+01
+AI & Data Analytics at the Core
+Solutions must leverage artificial intelligence, machine learning, and data-driven methodologies to address banking challenges at scale.
+
+02
+Real Problems, Real Stakes
+Each problem statement is sourced directly from IDBI Bank's business units — addressing operational gaps with measurable business impact.
+
+03
+Open to Professionals, Startups & FinTechs
+Whether you're an early-stage startup or an established FinTech, IDBI Innovate is designed to accommodate teams at every stage of maturity.
+
+04
+Prizes and Rewards
+Beyond rewards, winning teams may unlock a structured pathway towards co-development and implementation roadmap with IDBI Bank.
+
+Challenges
+Four Problem Statements & An Open Runway To Redefine Banking
+Select a problem statement or explore the wildcard track below to learn about challenges and expected technical outcomes.
+
+
+Talent Pipeline
+IDBI Bank may engage directly with the winning teams.
+
+Implementation
+Top POCs may gain access to the Bank’s sandbox environment leading to POC within IDBI Bank.
+
+Senior Mentorship
+Finalists receive intensive guidance from Bank's Senior Management and Digital Transformation Leaders.
+
+Collaboration
+Mature Startups and high-quality FinTechs and experienced professionals may be invited into formal collaboration with the bank.
+
+
+Sandbox Banking APIs
+Simulate real banking workflows and transactions through a dedicated sandbox environment provided by IDBI Bank.
+
+Synthetic Datasets
+Access anonymised datasets covering transactions, MSME financials, and UPI patterns — purpose-built for innovation challenges.
+
+Sandbox Banking APIs
+Simulate real banking workflows and transactions through a dedicated sandbox environment provided by IDBI Bank.
+
+Synthetic Datasets
+Access anonymised datasets covering transactions, MSME financials, and UPI patterns — purpose-built for innovation challenges.
+
+Cloud Infrastructure
+Leverage Amazon Web Services (AWS) and Applied Cloud Computing (ACC) tooling for building and deploying your solution at scale.
+
+Reference Architecture
+Starter kits, API documentation, and reference architecture guides to accelerate your build phase.
+
+Demo Walkthroughs
+Detailed product walkthroughs and orientation sessions to help teams get up to speed quickly.
+
+Expert Mentors
+Dedicated mentorship hours with IDBI Bank's Business Heads and Digital Transformation Leaders across all tracks.
+
+
+
+TRACK 01
+Wealth Advisory
+Conversational AI
+Mobile Banking
+**PROBLEM STATEMENT:
+Wealth management and advisory services remain fragmented and largely inaccessible to large number of customers. 
+Absence of comprehensive, customer investment behaviour and spending habits limits the ability to provide timely, 
+personalized, data-driven guidance.**
+
+
+
+
+
+EXPECTED OUTCOME
+Bank is looking for AI powered Digital Wealth management (Avatar Based) Application which integrates into the bank’
+s mobile application, to deliver personalized and scalable wealth advisory services through an intuitive digital interface.
