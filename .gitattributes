@@ -1,0 +1,11 @@
+# Normalize line endings to LF for all text files, so byte-level artifacts
+# (e.g. config @sha version pins) are stable across platforms and clones.
+* text=auto eol=lf
+
+# Binary assets — never touch line endings.
+*.png binary
+*.jpg binary
+*.glb binary
+*.ico binary
+*.mp3 binary
+*.sqlite binary
