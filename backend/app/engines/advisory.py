@@ -61,15 +61,36 @@ def _alloc(strategy_id: str) -> dict[str, float]:
     return {k: float(v) for k, v in _strategy_meta(strategy_id)["allocation_template"].items()}
 
 
-def _pct_claims(alloc: dict[str, float]) -> list[str]:
-    return [format_pct(v) for v in alloc.values()]
-
-
 def _dedup(items: list[str]) -> list[str]:
     seen: dict[str, None] = {}
     for it in items:
         seen.setdefault(it, None)
     return list(seen.keys())
+
+
+def _finish(fp: Fingerprint, sid: str, action: str, product_ref: Optional[str],
+            amount_paise: Optional[int], title: str, money_figures: dict[str, int],
+            pct_figures: dict[str, float], year_figures: dict[str, int],
+            inputs: dict, math_steps: list[str]) -> Recommendation:
+    """Assemble a Recommendation, deriving numeric_claims from the labeled figures.
+
+    numeric_claims is the union of the display forms of every money/pct/year
+    figure plus the allocation percentages — so it is provably a superset of any
+    number a template (or a validated LLM) may utter for this recommendation.
+    """
+    alloc = _alloc(sid)
+    claims = _dedup(
+        [c for v in money_figures.values() for c in inr_claims(v)]
+        + [format_pct(v) for v in pct_figures.values()]
+        + [c for v in year_figures.values() for c in year_claims(v)]
+        + [format_pct(v) for v in alloc.values()]
+    )
+    return Recommendation(
+        rec_id=f"{fp.persona_id}:{sid}", action=action, product_ref=product_ref,
+        amount_paise=amount_paise, allocation=alloc, strategy_id=sid, title=title,
+        money_figures=money_figures, pct_figures=pct_figures, year_figures=year_figures,
+        numeric_claims=claims, reasoning_trace=_trace(sid, inputs, math_steps),
+    )
 
 
 def _top_leak(fp: Fingerprint) -> Optional[object]:
@@ -94,19 +115,13 @@ def _build_goals_stepup(fp: Fingerprint) -> Recommendation:
     add = int(round(income * 0.05))
     years = max(60 - fp.age, 1)
     fv = projection.sip_future_value(add, years, projection.EQUITY_NOMINAL)
-    alloc = _alloc(sid)
-    claims = _dedup(inr_claims(add) + inr_claims(fv) + inr_claims(income)
-                    + year_claims(years) + _pct_claims(alloc))
-    return Recommendation(
-        rec_id=f"{fp.persona_id}:{sid}", action="step_up_sip",
-        product_ref="idbi_suvidha_sip", amount_paise=add, allocation=alloc,
-        strategy_id=sid, title="Escalate your disciplined SIP toward your goals",
-        numeric_claims=claims,
-        reasoning_trace=_trace(sid,
-            inputs={"monthly_income": income, "years": years},
-            math_steps=[f"step-up = 5% of income {income} = {add} paise/mo",
-                        f"FV over {years}y @10% = {fv} paise"]),
-    )
+    return _finish(fp, sid, "step_up_sip", "idbi_suvidha_sip", add,
+        "Escalate your disciplined SIP toward your goals",
+        money_figures={"stepup": add, "income": income, "projection": fv},
+        pct_figures={}, year_figures={"horizon": years},
+        inputs={"monthly_income": income, "years": years},
+        math_steps=[f"step-up = 5% of income {income} = {add} paise/mo",
+                    f"FV over {years}y @10% = {fv} paise"])
 
 
 def _build_bogle_sip(fp: Fingerprint) -> Recommendation:
@@ -115,38 +130,27 @@ def _build_bogle_sip(fp: Fingerprint) -> Recommendation:
     amount = food // 2
     years = max(60 - fp.age, 1)
     fv = projection.sip_future_value(amount, years, projection.EQUITY_NOMINAL)
-    alloc = _alloc(sid)
-    claims = _dedup(inr_claims(amount) + inr_claims(food) + inr_claims(fv)
-                    + year_claims(years) + _pct_claims(alloc))
-    return Recommendation(
-        rec_id=f"{fp.persona_id}:{sid}", action="start_sip",
-        product_ref="idbi_nifty_index", amount_paise=amount, allocation=alloc,
-        strategy_id=sid, title="Start a low-cost index SIP from your food-delivery spend",
-        numeric_claims=claims,
-        reasoning_trace=_trace(sid,
-            inputs={"food_leak": food, "years": years},
-            math_steps=[f"food-delivery leak = {food} paise/mo",
-                        f"redirect 50% = {amount} paise/mo",
-                        f"FV over {years}y @10% = {fv} paise"]),
-    )
+    return _finish(fp, sid, "start_sip", "idbi_nifty_index", amount,
+        "Start a low-cost index SIP from your food-delivery spend",
+        money_figures={"amount": amount, "leak": food, "projection": fv},
+        pct_figures={}, year_figures={"horizon": years},
+        inputs={"food_leak": food, "years": years},
+        math_steps=[f"food-delivery leak = {food} paise/mo",
+                    f"redirect 50% = {amount} paise/mo",
+                    f"FV over {years}y @10% = {fv} paise"])
 
 
 def _build_dalio(fp: Fingerprint) -> Recommendation:
     sid = "dalio_all_weather"
     amount = fp.idle_cash.value
     alloc = _alloc(sid)
-    buckets = {k: int(round(amount * v / 100)) for k, v in alloc.items()}
-    claims = _dedup(inr_claims(amount) + _pct_claims(alloc)
-                    + [c for b in buckets.values() for c in inr_claims(b)])
-    return Recommendation(
-        rec_id=f"{fp.persona_id}:{sid}", action="deploy_all_weather",
-        product_ref="idbi_gilt_fund", amount_paise=amount, allocation=alloc,
-        strategy_id=sid, title="Deploy idle cash into a capital-preserving All-Weather mix",
-        numeric_claims=claims,
-        reasoning_trace=_trace(sid,
-            inputs={"idle_cash": amount},
-            math_steps=[f"deploy idle {amount} paise across {alloc}"]),
-    )
+    buckets = {f"bucket_{k}": int(round(amount * v / 100)) for k, v in alloc.items()}
+    return _finish(fp, sid, "deploy_all_weather", "idbi_gilt_fund", amount,
+        "Deploy idle cash into a capital-preserving All-Weather mix",
+        money_figures={"amount": amount, **buckets},
+        pct_figures={}, year_figures={},
+        inputs={"idle_cash": amount},
+        math_steps=[f"deploy idle {amount} paise across {alloc}"])
 
 
 def _build_markowitz(fp: Fingerprint) -> Recommendation:
@@ -155,54 +159,36 @@ def _build_markowitz(fp: Fingerprint) -> Recommendation:
     fd = _best_fd()
     sb = _shelf()["savings_rate"]
     extra = int(round(amount * (fd["rate"] - sb) / 100))
-    alloc = _alloc(sid)
-    claims = _dedup(inr_claims(amount) + inr_claims(extra)
-                    + [format_pct(fd["rate"]), format_pct(sb)] + _pct_claims(alloc))
-    return Recommendation(
-        rec_id=f"{fp.persona_id}:{sid}", action="move_to_fd",
-        product_ref=fd["product_id"], amount_paise=amount, allocation=alloc,
-        strategy_id=sid, title="Move idle savings into a laddered IDBI FD",
-        numeric_claims=claims,
-        reasoning_trace=_trace(sid,
-            inputs={"idle_cash": amount, "fd_rate": fd["rate"], "savings_rate": sb},
-            math_steps=[f"idle cash = {amount} paise (100% cash concentration)",
-                        f"IDBI FD {fd['rate']}% vs SB {sb}%",
-                        f"extra interest/yr = {amount}*({fd['rate']}-{sb})/100 = {extra} paise"]),
-    )
+    return _finish(fp, sid, "move_to_fd", fd["product_id"], amount,
+        "Move idle savings into a laddered IDBI FD",
+        money_figures={"amount": amount, "extra": extra},
+        pct_figures={"fd_rate": fd["rate"], "savings_rate": sb}, year_figures={},
+        inputs={"idle_cash": amount, "fd_rate": fd["rate"], "savings_rate": sb},
+        math_steps=[f"idle cash = {amount} paise (100% cash concentration)",
+                    f"IDBI FD {fd['rate']}% vs SB {sb}%",
+                    f"extra interest/yr = {amount}*({fd['rate']}-{sb})/100 = {extra} paise"])
 
 
 def _build_swensen(fp: Fingerprint) -> Recommendation:
     sid = "swensen_diversify"
     amount = int(round(fp.monthly_income.value * 0.10))
-    alloc = _alloc(sid)
-    claims = _dedup(inr_claims(amount) + _pct_claims(alloc))
-    return Recommendation(
-        rec_id=f"{fp.persona_id}:{sid}", action="diversify_sip",
-        product_ref="idbi_nifty_index", amount_paise=amount, allocation=alloc,
-        strategy_id=sid, title="Diversify thin equity across a Swensen-style mix",
-        numeric_claims=claims,
-        reasoning_trace=_trace(sid,
-            inputs={"monthly_income": fp.monthly_income.value},
-            math_steps=[f"diversified SIP = 10% of income = {amount} paise/mo across {alloc}"]),
-    )
+    return _finish(fp, sid, "diversify_sip", "idbi_nifty_index", amount,
+        "Diversify thin equity across a Swensen-style mix",
+        money_figures={"amount": amount}, pct_figures={}, year_figures={},
+        inputs={"monthly_income": fp.monthly_income.value},
+        math_steps=[f"diversified SIP = 10% of income = {amount} paise/mo"])
 
 
 def _build_buffett(fp: Fingerprint) -> Recommendation:
     sid = "buffett_9010"
     amount = fp.idle_cash.value
     alloc = _alloc(sid)
-    buckets = {k: int(round(amount * v / 100)) for k, v in alloc.items()}
-    claims = _dedup(inr_claims(amount) + _pct_claims(alloc)
-                    + [c for b in buckets.values() for c in inr_claims(b)])
-    return Recommendation(
-        rec_id=f"{fp.persona_id}:{sid}", action="deploy_9010",
-        product_ref="idbi_nifty_index", amount_paise=amount, allocation=alloc,
-        strategy_id=sid, title="Put surplus to work with a Buffett 90/10 split",
-        numeric_claims=claims,
-        reasoning_trace=_trace(sid,
-            inputs={"idle_cash": amount},
-            math_steps=[f"deploy {amount} paise as 90/10 index/gilt"]),
-    )
+    buckets = {f"bucket_{k}": int(round(amount * v / 100)) for k, v in alloc.items()}
+    return _finish(fp, sid, "deploy_9010", "idbi_nifty_index", amount,
+        "Put surplus to work with a Buffett 90/10 split",
+        money_figures={"amount": amount, **buckets}, pct_figures={}, year_figures={},
+        inputs={"idle_cash": amount},
+        math_steps=[f"deploy {amount} paise as 90/10 index/gilt"])
 
 
 # --------------------------------------------------------------------------- #

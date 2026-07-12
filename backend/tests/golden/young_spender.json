@@ -71,6 +71,15 @@
       },
       "strategy_id": "bogle_index_sip",
       "title": "Start a low-cost index SIP from your food-delivery spend",
+      "money_figures": {
+        "amount": 240000,
+        "leak": 480000,
+        "projection": 747618004
+      },
+      "pct_figures": {},
+      "year_figures": {
+        "horizon": 33
+      },
       "numeric_claims": [
         "₹2,400",
         "₹4,800",
@@ -112,6 +121,11 @@
       },
       "strategy_id": "swensen_diversify",
       "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 480000
+      },
+      "pct_figures": {},
+      "year_figures": {},
       "numeric_claims": [
         "₹4,800",
         "40%",
@@ -126,7 +140,7 @@
           "monthly_income": 4800000
         },
         "math_steps": [
-          "diversified SIP = 10% of income = 480000 paise/mo across {'equity_index': 40.0, 'international_equity': 20.0, 'gilt': 25.0, 'reit': 15.0}"
+          "diversified SIP = 10% of income = 480000 paise/mo"
         ],
         "engine_ver": "advisory-1.0.0",
         "shelf_sha": "ca5f3e3c0df1",

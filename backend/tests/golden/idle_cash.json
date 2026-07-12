@@ -66,6 +66,15 @@
       },
       "strategy_id": "markowitz_concentration",
       "title": "Move idle savings into a laddered IDBI FD",
+      "money_figures": {
+        "amount": 33674015,
+        "extra": 1431146
+      },
+      "pct_figures": {
+        "fd_rate": 7.25,
+        "savings_rate": 3.0
+      },
+      "year_figures": {},
       "numeric_claims": [
         "₹3.37 lakh",
         "₹3.37 लाख",
@@ -107,6 +116,11 @@
       },
       "strategy_id": "swensen_diversify",
       "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 700000
+      },
+      "pct_figures": {},
+      "year_figures": {},
       "numeric_claims": [
         "₹7,000",
         "40%",
@@ -121,7 +135,7 @@
           "monthly_income": 7000000
         },
         "math_steps": [
-          "diversified SIP = 10% of income = 700000 paise/mo across {'equity_index': 40.0, 'international_equity': 20.0, 'gilt': 25.0, 'reit': 15.0}"
+          "diversified SIP = 10% of income = 700000 paise/mo"
         ],
         "engine_ver": "advisory-1.0.0",
         "shelf_sha": "ca5f3e3c0df1",
