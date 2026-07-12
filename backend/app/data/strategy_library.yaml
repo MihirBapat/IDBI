@@ -1,0 +1,75 @@
+# strategy_library.yaml — the 10 codified manager playbooks (PRD §3A).
+#
+# Each entry: id, source_principle, trigger_conditions (human-readable; the
+# predicate is enforced deterministically in advisory.py), allocation_template
+# (portfolio % by asset class), explanation_snippet (the philosophy the narrator
+# may quote — it never computes). Config-as-product: every trace pins this file's
+# sha (strategy_sha). Adding a manager = adding YAML (architecture §11).
+#
+# Six strategies are actively wired to triggers for the current personas; the
+# remaining four (Lynch/Marks/Graham/Vanguard-Alpha) are documented playbooks
+# invoked by intents/assumptions elsewhere (e.g. Marks on a panic-exit intent,
+# Graham's conservative returns are baked into projection.py).
+version: 1
+
+strategies:
+  - id: goals_based_stepup
+    source_principle: "Goals-based wealth management (Brunel/Chhabra) — bucket per goal, escalate savings as capacity rises"
+    trigger_conditions: "sip_discipline >= 0.5 AND savings_ratio > 0.30"
+    allocation_template: {equity_index: 70, gilt: 30}
+    explanation_snippet: "You already invest with discipline — private banks escalate a disciplined saver's contributions toward each goal."
+
+  - id: bogle_index_sip
+    source_principle: "Jack Bogle (Vanguard) — low-cost passive indexing; costs matter"
+    trigger_conditions: "sip_discipline < 0.5 AND risk_capacity in [MEDIUM, HIGH] AND a discretionary leak exists AND idle_cash < 3L"
+    allocation_template: {equity_index: 100}
+    explanation_snippet: "Redirecting a slice of everyday spending into a low-cost index fund is the simplest wealth engine Bogle championed."
+
+  - id: dalio_all_weather
+    source_principle: "Ray Dalio (Bridgewater) — All-Weather / risk parity across economic regimes"
+    trigger_conditions: "risk_capacity == LOW"
+    allocation_template: {equity_index: 25, gilt: 30, gold_sgb: 15, liquid: 30}
+    explanation_snippet: "Near your goal, Dalio's All-Weather mix spreads risk across regimes so no single shock derails you."
+
+  - id: markowitz_concentration
+    source_principle: "Harry Markowitz (MPT) — diversification is the only free lunch; concentration is risk"
+    trigger_conditions: "idle_cash >= 3L (idle savings = 100% cash concentration)"
+    allocation_template: {fd_ladder: 100}
+    explanation_snippet: "Cash sitting idle is a 100% bet on one asset; a laddered FD earns more while staying safe."
+
+  - id: swensen_diversify
+    source_principle: "David Swensen (Yale) — allocation first, security selection second; equity-oriented diversification"
+    trigger_conditions: "equity_holding < 50k (thin equity exposure)"
+    allocation_template: {equity_index: 40, international_equity: 20, gilt: 25, reit: 15}
+    explanation_snippet: "Swensen's endowment model diversifies an equity core across geographies and real assets."
+
+  - id: buffett_9010
+    source_principle: "Warren Buffett — 90/10 index-plus-bills for hands-off investors; long holding periods"
+    trigger_conditions: "risk_capacity == HIGH AND (savings_ratio > 0.30 OR idle_cash >= 2L)"
+    allocation_template: {equity_index: 90, gilt: 10}
+    explanation_snippet: "Buffett's own estate instruction: 90% low-cost index, 10% short-term government bonds."
+
+  # --- Documented playbooks (invoked by intents/assumptions, not persona triggers) ---
+  - id: vanguard_advisors_alpha
+    source_principle: "Vanguard 'Advisor's Alpha' — ~3%/yr from coaching, rebalancing, tax location, low cost"
+    trigger_conditions: "meta-strategy: behavioral coaching layer on every session"
+    allocation_template: {}
+    explanation_snippet: "The largest source of advisor value is behavioral coaching — staying the course."
+
+  - id: lynch_invest_in_what_you_know
+    source_principle: "Peter Lynch — invest in what you understand; behavior-revealed insight"
+    trigger_conditions: "education framing using the user's own spend categories"
+    allocation_template: {}
+    explanation_snippet: "Lynch used everyday familiarity as a lens — here only to explain, never as a stock tip."
+
+  - id: marks_cycle_guardrail
+    source_principle: "Howard Marks (Oaktree) — cycles; risk management over return chasing"
+    trigger_conditions: "panic-exit intent during a drawdown"
+    allocation_template: {}
+    explanation_snippet: "Marks' second-level thinking: cycles turn; panic-selling locks in the loss."
+
+  - id: graham_margin_of_safety
+    source_principle: "Benjamin Graham — margin of safety; conservative assumptions"
+    trigger_conditions: "always: projections use conservative 10% equity / 6.5% debt nominal"
+    allocation_template: {}
+    explanation_snippet: "Graham's margin of safety is encoded as deliberately conservative return assumptions."

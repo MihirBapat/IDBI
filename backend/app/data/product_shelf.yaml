@@ -1,0 +1,34 @@
+# product_shelf.yaml — IDBI Bank distributable product shelf (prototype).
+#
+# Config-as-product: rates/TERs are versioned data, not code. Every trace pins
+# this file's sha (shelf_sha). Amounts are display rates; the engine never
+# recommends a product outside this shelf (CLAUDE.md §5, RIA-vs-distribution).
+#
+# NOTE: illustrative prototype figures for the demo, not live IDBI rate cards.
+version: 1
+as_of: "2026-07-01"
+savings_rate: 3.0          # IDBI SB account interest (% p.a.) — the idle-cash baseline
+
+fixed_deposits:
+  - {product_id: idbi_fd_1y, name: "IDBI Fixed Deposit — 1 year",  rate: 6.90, tenure_months: 12, min_amount: 10000}
+  - {product_id: idbi_fd_2y, name: "IDBI Fixed Deposit — 2 year",  rate: 7.10, tenure_months: 24, min_amount: 10000}
+  - {product_id: idbi_fd_3y, name: "IDBI Fixed Deposit — 3 year",  rate: 7.25, tenure_months: 36, min_amount: 10000}
+  - {product_id: idbi_fd_5y, name: "IDBI Tax-Saver FD — 5 year",   rate: 7.30, tenure_months: 60, min_amount: 10000}
+
+mutual_funds:
+  - {product_id: idbi_nifty_index, name: "IDBI Nifty 50 Index Fund — Direct Growth", asset: equity_index,        ter: 0.20, min_amount: 500}
+  - {product_id: idbi_sensex_index, name: "IDBI Sensex Index Fund — Direct Growth",  asset: equity_index,        ter: 0.25, min_amount: 500}
+  - {product_id: idbi_intl_fof,    name: "IDBI Global Equity FoF — Direct Growth",   asset: international_equity, ter: 0.55, min_amount: 1000}
+  - {product_id: idbi_flexi_cap,   name: "IDBI Flexi Cap Fund — Direct Growth",      asset: equity,              ter: 0.85, min_amount: 500}
+  - {product_id: idbi_gilt_fund,   name: "IDBI Gilt Fund — Direct Growth",           asset: gilt,                ter: 0.45, min_amount: 500}
+  - {product_id: idbi_liquid_fund, name: "IDBI Liquid Fund — Direct Growth",         asset: liquid,              ter: 0.20, min_amount: 500}
+  - {product_id: idbi_reit_fof,    name: "IDBI REIT/InvIT FoF — Direct Growth",      asset: reit,                ter: 0.60, min_amount: 1000}
+
+sip:
+  - {product_id: idbi_suvidha_sip, name: "IDBI Suvidha SIP", min_amount: 500, step_up_allowed: true}
+
+gold:
+  - {product_id: sgb_gold, name: "Sovereign Gold Bond (RBI) / Gold ETF", asset: gold_sgb, min_amount: 1000}
+
+insurance:
+  - {product_id: idbi_term_cover, name: "IDBI Federal Term Life Cover", type: term, min_amount: 5000}

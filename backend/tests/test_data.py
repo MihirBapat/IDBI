@@ -70,6 +70,11 @@ def test_ledger_reconciles(persona_id: str) -> None:
     for t in txns:
         assert isinstance(t["amount"], int) and t["amount"] > 0
 
+    # Balances stay non-negative throughout (realistic account, no overdraft).
+    assert dep["openingBalance"] >= 0
+    for t in txns:
+        assert t["currentBalance"] >= 0, f"negative balance at {t['txnId']}"
+
 
 @pytest.mark.parametrize("persona_id", PERSONA_IDS)
 def test_mutual_funds_value_consistent(persona_id: str) -> None:

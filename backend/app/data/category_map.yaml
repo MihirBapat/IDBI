@@ -1,0 +1,34 @@
+# category_map.yaml — closed-vocabulary categorizer for raw narrations.
+#
+# Raw merchant/UPI narration strings are attacker-controlled (prompt-injection
+# surface). They are mapped to this closed set of category codes inside
+# behavioral.py and NEVER leave that module — only category codes flow onward.
+#
+# Rules are evaluated top-to-bottom, first match wins, matched case-insensitively
+# as a regex against the narration. Specific merchant rules must precede the
+# generic `upi/` catch-all, which absorbs peer-to-peer transfers (including the
+# injection canary) into UPI_P2P.
+version: 1
+rules:
+  - {category: SALARY,            pattern: "salary"}
+  - {category: SIP_DEBIT,         pattern: "/sip"}
+  - {category: INTEREST_CREDIT,   pattern: "interest"}
+  - {category: INSURANCE_PREMIUM, pattern: "premium|hdfclife|maxlife|icicipru|jeevan|lic/"}
+  - {category: EMI,               pattern: "emi|homeloan"}
+  - {category: UTILITIES,         pattern: "bbps|electricity"}
+  - {category: SUBSCRIPTION,      pattern: "netflix|spotify|prime|hotstar"}
+  - {category: FOOD_DELIVERY,     pattern: "swiggy|zomato"}
+  - {category: SHOPPING,          pattern: "amazon|myntra|flipkart"}
+  - {category: GROCERIES,         pattern: "bigbasket|blinkit|dmart"}
+  - {category: DINING,            pattern: "barbeque|restaurant|dining"}
+  - {category: FUEL,              pattern: "hpcl|indianoil|petrol|fuel"}
+  - {category: EDUCATION,         pattern: "school|/fees|tuition"}
+  - {category: MEDICAL,           pattern: "apollo|pharmacy|medical|hospital"}
+  - {category: HOUSING,           pattern: "society|maintenance"}
+  - {category: RENT,              pattern: "landlord|/rent"}
+  - {category: FD_CREATION,       pattern: "fd/create"}
+  - {category: UPI_P2P,           pattern: "upi/"}
+  - {category: OTHERS,            pattern: ".*"}
+
+# Discretionary categories the behavioral engine surfaces as "spend leaks".
+leak_categories: [FOOD_DELIVERY, SUBSCRIPTION, SHOPPING, DINING]
