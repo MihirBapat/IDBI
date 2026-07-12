@@ -1,0 +1,23 @@
+# suitability_rules.yaml — the investor-protection gate (SEBI suitability).
+#
+# Runs AFTER advisory, BEFORE narration. Each candidate recommendation is scored
+# PASS / SOFTEN / VETO. A VETO carries a refusal_reason into the reasoning_trace
+# — the engine must be able to decline and explain, not only recommend. Only
+# PASS/SOFTEN recommendations are eligible to reach the narrator.
+version: 1
+
+# Maximum equity allocation (%) tolerated by ability-to-bear-risk band.
+equity_cap_by_risk:
+  LOW: 30
+  MEDIUM: 60
+  HIGH: 100
+
+# At/above this age the LOW-risk equity ceiling is enforced regardless of the
+# computed risk band (short investing horizon dominates).
+age_low_risk_threshold: 50
+
+# Asset-class keys treated as equity when summing a recommendation's equity %.
+equity_assets: [equity_index, equity, international_equity, flexi_cap, equity_elss]
+
+# Lump-sum recommendations may not exceed the investor's idle surplus.
+enforce_amount_within_idle: true

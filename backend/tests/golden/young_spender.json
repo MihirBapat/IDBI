@@ -1,0 +1,139 @@
+{
+  "persona_id": "young_spender",
+  "fingerprint": {
+    "persona_id": "young_spender",
+    "age": 27,
+    "monthly_income": {
+      "value": 4800000,
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "savings_ratio": {
+      "value": 0.1105,
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "spend_leaks": {
+      "value": [
+        {
+          "category_code": "SHOPPING",
+          "monthly_amount": 900076,
+          "txn_count": 12
+        },
+        {
+          "category_code": "FOOD_DELIVERY",
+          "monthly_amount": 480000,
+          "txn_count": 51
+        },
+        {
+          "category_code": "DINING",
+          "monthly_amount": 449812,
+          "txn_count": 12
+        }
+      ],
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "sip_discipline": {
+      "value": 0.0,
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "idle_cash": {
+      "value": 766355,
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "equity_holding": {
+      "value": 0,
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "insurance_gap": {
+      "value": 576000000,
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    },
+    "risk_capacity": {
+      "value": "HIGH",
+      "as_of": "2026-06-26T00:00:00",
+      "confidence": 0.9
+    }
+  },
+  "recommendations": [
+    {
+      "rec_id": "young_spender:bogle_index_sip",
+      "action": "start_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 240000,
+      "allocation": {
+        "equity_index": 100.0
+      },
+      "strategy_id": "bogle_index_sip",
+      "title": "Start a low-cost index SIP from your food-delivery spend",
+      "numeric_claims": [
+        "₹2,400",
+        "₹4,800",
+        "₹74.76 lakh",
+        "₹74.76 लाख",
+        "33 years",
+        "33 साल",
+        "100%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "bogle_index_sip",
+        "source_principle": "Jack Bogle (Vanguard) — low-cost passive indexing; costs matter",
+        "inputs_used": {
+          "food_leak": 480000,
+          "years": 33
+        },
+        "math_steps": [
+          "food-delivery leak = 480000 paise/mo",
+          "redirect 50% = 240000 paise/mo",
+          "FV over 33y @10% = 747618004 paise"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    },
+    {
+      "rec_id": "young_spender:swensen_diversify",
+      "action": "diversify_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 480000,
+      "allocation": {
+        "equity_index": 40.0,
+        "international_equity": 20.0,
+        "gilt": 25.0,
+        "reit": 15.0
+      },
+      "strategy_id": "swensen_diversify",
+      "title": "Diversify thin equity across a Swensen-style mix",
+      "numeric_claims": [
+        "₹4,800",
+        "40%",
+        "20%",
+        "25%",
+        "15%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "swensen_diversify",
+        "source_principle": "David Swensen (Yale) — allocation first, security selection second; equity-oriented diversification",
+        "inputs_used": {
+          "monthly_income": 4800000
+        },
+        "math_steps": [
+          "diversified SIP = 10% of income = 480000 paise/mo across {'equity_index': 40.0, 'international_equity': 20.0, 'gilt': 25.0, 'reit': 15.0}"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

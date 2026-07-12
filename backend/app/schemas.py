@@ -19,7 +19,7 @@ in the engine, never here and never in the LLM.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Literal, Optional
+from typing import Generic, Literal, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -152,12 +152,23 @@ class PersonaFI(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class Staleness(BaseModel):
-    """Per-field freshness metadata. The engine softens claims when stale."""
+T = TypeVar("T")
 
-    computed_at: datetime
-    source_max_age_days: int
-    confidence: float = Field(ge=0.0, le=1.0)
+RiskCapacity = Literal["LOW", "MEDIUM", "HIGH"]
+Verdict = Literal["PASS", "SOFTEN", "VETO"]
+
+
+class Metric(BaseModel, Generic[T]):
+    """A fingerprint field wrapped with freshness metadata.
+
+    ``as_of`` dates the underlying data; ``confidence`` (0..1) drops when AA
+    data is partial or stale so the narrator can hedge honestly rather than
+    silently imputing.
+    """
+
+    value: T
+    as_of: datetime
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
 class SpendLeak(BaseModel):
@@ -171,36 +182,40 @@ class SpendLeak(BaseModel):
 class Fingerprint(BaseModel):
     """Behavioral Financial Fingerprint — output of ``engines/behavioral.py``.
 
-    Computed deterministically from FI-JSON. Every field carries staleness so
-    the narrator can hedge honestly when AA data is partial or old.
+    Computed deterministically from FI-JSON. Every field is a ``Metric`` so it
+    travels with its own ``as_of``/``confidence`` staleness metadata.
     """
 
     persona_id: str
-    savings_ratio: float = Field(description="Saved / inflow, 0..1.")
-    spend_leaks: list[SpendLeak] = Field(default_factory=list)
-    sip_discipline: float = Field(ge=0.0, le=1.0, description="SIP regularity, 0..1.")
-    idle_cash: int = Field(description="Cash sitting idle in savings, in paise.")
-    insurance_gap: int = Field(description="Estimated cover shortfall in paise.")
-    risk_capacity: Literal["low", "moderate", "high"]
-    staleness: Staleness
+    age: int
+    monthly_income: Metric[int]
+    savings_ratio: Metric[float]
+    spend_leaks: Metric[list[SpendLeak]]
+    sip_discipline: Metric[float]
+    idle_cash: Metric[int]
+    equity_holding: Metric[int]
+    insurance_gap: Metric[int]
+    risk_capacity: Metric[RiskCapacity]
 
 
 class ReasoningTrace(BaseModel):
     """Per-recommendation audit record — the 'Why this advice?' payload.
 
     Pins the versions that produced the number so a turn is bit-for-bit
-    replayable (SEBI 5-year record test).
+    replayable (SEBI 5-year record test). ``refusal_reason`` is populated by the
+    suitability gate when a recommendation is softened or vetoed.
     """
 
-    strategy_code: str
+    strategy_id: str
     source_principle: str
-    inputs: dict = Field(default_factory=dict)
-    math: list[str] = Field(
+    inputs_used: dict = Field(default_factory=dict)
+    math_steps: list[str] = Field(
         default_factory=list, description="Ordered human-readable calc steps."
     )
     engine_ver: str
     shelf_sha: str
     strategy_sha: str
+    refusal_reason: Optional[str] = None
 
 
 class Recommendation(BaseModel):
@@ -208,11 +223,35 @@ class Recommendation(BaseModel):
 
     ``numeric_claims`` is the whitelist of pre-formatted numerals the narrator
     is permitted to speak; the output validator rejects any numeral outside it.
+    ``status`` is set by the suitability gate — only PASS/SOFTEN reach narration.
     """
 
     rec_id: str
-    title: str
+    action: str
+    product_ref: Optional[str] = None
+    amount_paise: Optional[int] = None
     allocation: dict[str, float] = Field(default_factory=dict)
-    products: list[str] = Field(default_factory=list)
+    strategy_id: str
+    title: str = ""
+    numeric_claims: list[str] = Field(default_factory=list)
+    reasoning_trace: ReasoningTrace
+    status: Verdict = "PASS"
+
+
+class ProjectionLine(BaseModel):
+    """One first-person line spoken by the aged 'Future Self' avatar."""
+
+    text: str
+    numeric_claims: list[str] = Field(default_factory=list)
+
+
+class ProjectionScript(BaseModel):
+    """Deterministic 30-year Future Self narration (good or bad branch)."""
+
+    persona_id: str
+    take_advice: bool
+    horizon_years: int
+    corpus_paise: int
+    lines: list[ProjectionLine] = Field(default_factory=list)
     numeric_claims: list[str] = Field(default_factory=list)
     reasoning_trace: ReasoningTrace
