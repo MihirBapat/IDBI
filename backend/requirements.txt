@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pandas
+pyyaml
+pydantic
+edge-tts
+google-generativeai
+pytest
+httpx
