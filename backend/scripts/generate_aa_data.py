@@ -1,6 +1,6 @@
 """Synthetic Account Aggregator FI-JSON generator.
 
-Emits ReBIT-style FI-JSON for five behavioral personas into
+Emits ReBIT-style FI-JSON for fifteen behavioral personas into
 ``backend/app/data/personas/{persona_id}.json``. This is the day-1 stand-in for
 the AA FIU fetch: the schema is identical to what IDBI's sandbox returns, so the
 swap is one adapter (architecture §11, "code against ReBIT from day 1").
@@ -394,8 +394,272 @@ def cfg_near_retiree() -> PersonaCfg:
     )
 
 
+# --------------------------------------------------------------------------- #
+# Ten additional personas (broader behavioural coverage)
+#
+# Every narration below stays inside the closed vocabulary in category_map.yaml
+# (test_behavioral::test_category_map_consistent_with_generator proves the regex
+# map re-derives each assigned categoryCode). Each persona is tuned to a distinct
+# behavioural signature so the advisory registry fires a meaningful strategy mix,
+# and every one triggers at least one recommendation.
+# --------------------------------------------------------------------------- #
+
+def cfg_new_graduate() -> PersonaCfg:
+    """23y, first job, student-loan EMI, thin savings, no SIP — start-small case."""
+    return PersonaCfg(
+        persona_id="new_graduate", holder="Ishaan Verma", age=23,
+        acc="XXXXXX2210", pan="XXXXX2210F", employer="NEXUS SOFTWARE PVT LTD",
+        salary=rupees(32000), opening=rupees(15000), food_monthly=rupees(3000),
+        upi_noise=3,
+        monthly=[
+            MonthlyItem(2, "EMI", rupees(4000), 0, narration="ACH/STUDENTLOAN/EMI/IDBI"),
+            MonthlyItem(3, "RENT", rupees(8000), 0, narration="UPI/landlord.pg@okicici/rent"),
+            MonthlyItem(8, "UTILITIES", rupees(800), 200, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(119), 0, narration="Spotify India/AutoPay"),
+            MonthlyItem(15, "SHOPPING", rupees(2500), 600, bank=_SHOP),
+            MonthlyItem(18, "DINING", rupees(2000), 500, bank=_DINING),
+            MonthlyItem(22, "GROCERIES", rupees(2000), 400, bank=_GROCERY),
+            MonthlyItem(24, "FUEL", rupees(1200), 300, bank=_FUEL),
+        ],
+    )
+
+
+def cfg_credit_revolver() -> PersonaCfg:
+    """31y, lifestyle inflation, car + credit-card EMIs, barely any savings."""
+    return PersonaCfg(
+        persona_id="credit_revolver", holder="Rohan Kapoor", age=31,
+        acc="XXXXXX5090", pan="XXXXX5090G", employer="ZENITH MEDIA HOUSE",
+        salary=rupees(76000), opening=rupees(50000), food_monthly=rupees(6000),
+        upi_noise=4,
+        monthly=[
+            MonthlyItem(2, "EMI", rupees(9000), 0, narration="ACH/CARLOAN/EMI/IDBI"),
+            MonthlyItem(4, "EMI", rupees(6000), 0, narration="ACH/CREDITCARD/EMI/IDBI"),
+            MonthlyItem(3, "RENT", rupees(20000), 0, narration="UPI/landlord@okaxis/rent"),
+            MonthlyItem(8, "UTILITIES", rupees(2000), 400, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(899), 0, narration="HOTSTAR/SUBSCRIPTION"),
+            MonthlyItem(15, "SHOPPING", rupees(10000), 2000, bank=_SHOP),
+            MonthlyItem(18, "DINING", rupees(6000), 1200, bank=_DINING),
+            MonthlyItem(22, "GROCERIES", rupees(4000), 800, bank=_GROCERY),
+            MonthlyItem(24, "FUEL", rupees(3000), 500, bank=_FUEL),
+        ],
+    )
+
+
+def cfg_dinks_couple() -> PersonaCfg:
+    """33y, dual-income high earner, disciplined SIP, strong surplus — step-up case."""
+    cfg = PersonaCfg(
+        persona_id="dinks_couple", holder="Neha Malhotra", age=33,
+        acc="XXXXXX3312", pan="XXXXX3312H", employer="APEX GLOBAL SERVICES",
+        salary=rupees(160000), opening=rupees(200000), food_monthly=rupees(7000),
+        upi_noise=3, sip=(rupees(15000), "IDBI-NIFTY-INDEX"),
+        monthly=[
+            MonthlyItem(3, "RENT", rupees(45000), 0, narration="UPI/landlord@okhdfc/rent"),
+            MonthlyItem(8, "UTILITIES", rupees(3500), 600, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(119), 0, narration="Spotify India/AutoPay"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(1499), 0, narration="Prime Video/AutoPay"),
+            MonthlyItem(14, "GROCERIES", rupees(9000), 1500, bank=_GROCERY),
+            MonthlyItem(15, "SHOPPING", rupees(14000), 3000, bank=_SHOP),
+            MonthlyItem(18, "DINING", rupees(9000), 2500, bank=_DINING),
+            MonthlyItem(24, "FUEL", rupees(4000), 700, bank=_FUEL),
+        ],
+    )
+    sip_hist = [{"date": date(y, m, 5).isoformat(), "amount": rupees(15000)}
+                for (y, m) in _MONTHS]
+    cfg.mutual_funds = [make_mf(
+        "IDBI Nifty Index Fund - Direct Growth", "IDBI-3312",
+        cost_paise=rupees(180000), gain_pct=0.12, buy_nav_paise=rupees(45),
+        sip_flag=True, sip_history=sip_hist)]
+    return cfg
+
+
+def cfg_sandwich_generation() -> PersonaCfg:
+    """45y, supports parents and school kids, home-loan EMI, no room to invest."""
+    return PersonaCfg(
+        persona_id="sandwich_generation", holder="Deepak Iyer", age=45,
+        acc="XXXXXX4527", pan="XXXXX4527J", employer="ORION ENGINEERING LTD",
+        salary=rupees(110000), opening=rupees(90000), food_monthly=rupees(2500),
+        upi_noise=2,
+        monthly=[
+            MonthlyItem(2, "EMI", rupees(28000), 0, narration="ACH/HOMELOAN/EMI/IDBI"),
+            MonthlyItem(10, "EDUCATION", rupees(15000), 0, narration="UPI/school@okhdfc/fees"),
+            MonthlyItem(11, "MEDICAL", rupees(6000), 1500, narration="UPI/apollo-pharmacy@okicici/medical"),
+            MonthlyItem(20, "UPI_P2P", rupees(12000), 0, narration="UPI/family.support@oksbi/p2p transfer"),
+            MonthlyItem(8, "UTILITIES", rupees(3000), 500, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(14, "GROCERIES", rupees(12000), 1500, bank=_GROCERY),
+            MonthlyItem(24, "FUEL", rupees(4000), 600, bank=_FUEL),
+        ],
+    )
+
+
+def cfg_fd_loyalist() -> PersonaCfg:
+    """48y, risk-averse, everything in FDs, no equity, cash piling up idle."""
+    return PersonaCfg(
+        persona_id="fd_loyalist", holder="Lakshmi Pillai", age=48,
+        acc="XXXXXX6631", pan="XXXXX6631K", employer="CENTRAL TEXTILES LTD",
+        salary=rupees(95000), opening=rupees(300000), food_monthly=rupees(1800),
+        upi_noise=2,
+        monthly=[
+            MonthlyItem(3, "RENT", rupees(18000), 0, narration="UPI/landlord@okhdfc/rent"),
+            MonthlyItem(8, "UTILITIES", rupees(2500), 400, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(11, "MEDICAL", rupees(2500), 800, narration="UPI/apollo-pharmacy@okicici/medical"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(14, "GROCERIES", rupees(10000), 1500, bank=_GROCERY),
+            MonthlyItem(16, "SHOPPING", rupees(3000), 700, bank=_SHOP),
+            MonthlyItem(24, "FUEL", rupees(3000), 500, bank=_FUEL),
+        ],
+        oneoffs=[
+            OneOff(date(2025, 12, 28), "INTEREST_CREDIT", rupees(6800),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+            OneOff(date(2026, 6, 28), "INTEREST_CREDIT", rupees(6800),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+        ],
+        term_deposits=[
+            make_fd("XXXXXX6631", rupees(250000), 7.0, 24, date(2025, 3, 12)),
+            make_fd("XXXXXX6631", rupees(200000), 7.15, 36, date(2024, 11, 8)),
+        ],
+    )
+
+
+def cfg_rural_saver() -> PersonaCfg:
+    """40y, small-town teacher, frugal, very high savings rate, no equity."""
+    return PersonaCfg(
+        persona_id="rural_saver", holder="Kavya Reddy", age=40,
+        acc="XXXXXX7742", pan="XXXXX7742L", employer="ZILLA PARISHAD SCHOOL",
+        salary=rupees(45000), opening=rupees(120000), food_monthly=0,
+        upi_noise=1,
+        monthly=[
+            MonthlyItem(4, "HOUSING", rupees(3000), 0, narration="UPI/society@okhdfc/maintenance"),
+            MonthlyItem(8, "UTILITIES", rupees(1500), 300, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(11, "MEDICAL", rupees(1500), 500, narration="UPI/apollo-pharmacy@okicici/medical"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(14, "GROCERIES", rupees(6000), 1000, bank=_GROCERY),
+            MonthlyItem(24, "FUEL", rupees(1500), 400, bank=_FUEL),
+        ],
+        oneoffs=[
+            OneOff(date(2026, 3, 28), "INTEREST_CREDIT", rupees(3500),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+        ],
+        term_deposits=[make_fd("XXXXXX7742", rupees(100000), 6.9, 24, date(2025, 5, 10))],
+    )
+
+
+def cfg_single_parent() -> PersonaCfg:
+    """36y, single mother, school fees, holds a term policy, tight budget."""
+    return PersonaCfg(
+        persona_id="single_parent", holder="Meera Joshi", age=36,
+        acc="XXXXXX8853", pan="XXXXX8853M", employer="SUNRISE RETAIL PVT LTD",
+        salary=rupees(68000), opening=rupees(60000), food_monthly=rupees(2000),
+        upi_noise=2,
+        monthly=[
+            MonthlyItem(3, "RENT", rupees(16000), 0, narration="UPI/landlord@okhdfc/rent"),
+            MonthlyItem(10, "EDUCATION", rupees(12000), 0, narration="UPI/school@okhdfc/fees"),
+            MonthlyItem(8, "UTILITIES", rupees(2000), 400, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(11, "MEDICAL", rupees(2000), 600, narration="UPI/apollo-pharmacy@okicici/medical"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(14, "GROCERIES", rupees(9000), 1200, bank=_GROCERY),
+            MonthlyItem(24, "FUEL", rupees(2500), 500, bank=_FUEL),
+        ],
+        oneoffs=[
+            OneOff(date(2025, 10, 12), "INSURANCE_PREMIUM", rupees(9000),
+                   "MAXLIFE/TERM/PREMIUM", mode="ACH"),
+        ],
+    )
+
+
+def cfg_fire_aspirant() -> PersonaCfg:
+    """43y, high earner, aggressive saver, big SIP + equity, chasing early retirement."""
+    cfg = PersonaCfg(
+        persona_id="fire_aspirant", holder="Aditya Ghosh", age=43,
+        acc="XXXXXX9964", pan="XXXXX9964N", employer="QUANTLEAP ANALYTICS",
+        salary=rupees(220000), opening=rupees(250000), food_monthly=rupees(3000),
+        upi_noise=2, sip=(rupees(40000), "IDBI-NIFTY-INDEX"),
+        monthly=[
+            MonthlyItem(2, "EMI", rupees(35000), 0, narration="ACH/HOMELOAN/EMI/IDBI"),
+            MonthlyItem(8, "UTILITIES", rupees(4000), 700, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(1499), 0, narration="Prime Video/AutoPay"),
+            MonthlyItem(14, "GROCERIES", rupees(12000), 1500, bank=_GROCERY),
+            MonthlyItem(15, "SHOPPING", rupees(5000), 1000, bank=_SHOP),
+            MonthlyItem(18, "DINING", rupees(4000), 900, bank=_DINING),
+            MonthlyItem(24, "FUEL", rupees(4000), 600, bank=_FUEL),
+        ],
+    )
+    sip_hist = [{"date": date(y, m, 5).isoformat(), "amount": rupees(40000)}
+                for (y, m) in _MONTHS]
+    cfg.mutual_funds = [make_mf(
+        "IDBI Nifty Index Fund - Direct Growth", "IDBI-9964",
+        cost_paise=rupees(1000000), gain_pct=0.15, buy_nav_paise=rupees(50),
+        sip_flag=True, sip_history=sip_hist)]
+    return cfg
+
+
+def cfg_self_employed_business() -> PersonaCfg:
+    """47y, business owner, kids in school, ULIP premium, lifestyle spend, thin equity."""
+    return PersonaCfg(
+        persona_id="self_employed_business", holder="Vikram Shah", age=47,
+        acc="XXXXXX1075", pan="XXXXX1075P", employer="SHAH TRADING CO",
+        salary=rupees(120000), opening=rupees(80000), food_monthly=rupees(3500),
+        upi_noise=3,
+        monthly=[
+            MonthlyItem(2, "EMI", rupees(35000), 0, narration="ACH/HOMELOAN/EMI/IDBI"),
+            MonthlyItem(10, "EDUCATION", rupees(18000), 0, narration="UPI/school@okhdfc/fees"),
+            MonthlyItem(8, "UTILITIES", rupees(4000), 800, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(899), 0, narration="HOTSTAR/SUBSCRIPTION"),
+            MonthlyItem(14, "GROCERIES", rupees(13000), 2000, bank=_GROCERY),
+            MonthlyItem(15, "SHOPPING", rupees(7000), 1500, bank=_SHOP),
+            MonthlyItem(18, "DINING", rupees(6000), 1200, bank=_DINING),
+            MonthlyItem(24, "FUEL", rupees(5000), 800, bank=_FUEL),
+        ],
+        oneoffs=[
+            OneOff(date(2025, 9, 15), "INSURANCE_PREMIUM", rupees(30000),
+                   "HDFCLIFE/ULIP/PREMIUM", mode="ACH"),
+        ],
+    )
+
+
+def cfg_senior_pensioner() -> PersonaCfg:
+    """61y, retired on pension, FD-heavy, high medical spend — capital preservation."""
+    return PersonaCfg(
+        persona_id="senior_pensioner", holder="Ramesh Gupta", age=61,
+        acc="XXXXXX2186", pan="XXXXX2186Q", employer="STATE PENSION FUND",
+        salary=rupees(55000), opening=rupees(400000), food_monthly=0,
+        upi_noise=1,
+        monthly=[
+            MonthlyItem(4, "HOUSING", rupees(4000), 0, narration="UPI/society@okhdfc/maintenance"),
+            MonthlyItem(8, "UTILITIES", rupees(3500), 500, narration="BBPS/ELECTRICITY/BILLPAY"),
+            MonthlyItem(11, "MEDICAL", rupees(8000), 2000, narration="UPI/apollo-pharmacy@okicici/medical"),
+            MonthlyItem(12, "SUBSCRIPTION", rupees(649), 0, narration="NETFLIX.COM/MUMBAI/IN"),
+            MonthlyItem(14, "GROCERIES", rupees(10000), 1500, bank=_GROCERY),
+            MonthlyItem(24, "FUEL", rupees(2000), 400, bank=_FUEL),
+        ],
+        oneoffs=[
+            OneOff(date(2025, 9, 25), "INTEREST_CREDIT", rupees(9000),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+            OneOff(date(2025, 12, 25), "INTEREST_CREDIT", rupees(9000),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+            OneOff(date(2026, 3, 25), "INTEREST_CREDIT", rupees(9000),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+            OneOff(date(2026, 6, 25), "INTEREST_CREDIT", rupees(9000),
+                   "IDBI/FD/INTEREST/PAYOUT", ttype="CREDIT", mode="INTERNAL"),
+        ],
+        term_deposits=[
+            make_fd("XXXXXX2186", rupees(500000), 7.25, 36, date(2024, 8, 14)),
+            make_fd("XXXXXX2186", rupees(400000), 7.1, 24, date(2025, 2, 22)),
+        ],
+    )
+
+
 _CFGS = [cfg_young_spender, cfg_disciplined_saver, cfg_idle_cash,
-         cfg_over_insured, cfg_near_retiree]
+         cfg_over_insured, cfg_near_retiree,
+         cfg_new_graduate, cfg_credit_revolver, cfg_dinks_couple,
+         cfg_sandwich_generation, cfg_fd_loyalist, cfg_rural_saver,
+         cfg_single_parent, cfg_fire_aspirant, cfg_self_employed_business,
+         cfg_senior_pensioner]
 _BUILDERS = {c().persona_id: c for c in _CFGS}
 
 

@@ -1,4 +1,4 @@
-"""Part 1 gate: the 5 synthetic personas parse and reconcile.
+"""Part 1 gate: the synthetic personas parse and reconcile.
 
 Two guarantees:
   1. every persona file validates against the ``PersonaFI`` pydantic model
@@ -33,8 +33,8 @@ def _load(persona_id: str) -> dict:
         return json.load(fh)
 
 
-def test_all_five_personas_present() -> None:
-    assert len(PERSONA_IDS) == 5
+def test_all_personas_present() -> None:
+    assert len(PERSONA_IDS) == 15
     for pid in PERSONA_IDS:
         assert (DATA_DIR / f"{pid}.json").exists(), f"missing {pid}.json"
 

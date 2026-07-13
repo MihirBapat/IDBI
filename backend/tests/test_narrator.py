@@ -21,9 +21,10 @@ from app.llm.narrator import (build_prompt, disclosure, narrate,
                               template_narration)
 from app.llm.validator import extract_numerals, validate
 
+from scripts.generate_aa_data import _BUILDERS
+
 PERSONA_DIR = Path(__file__).resolve().parents[1] / "app" / "data" / "personas"
-PERSONAS = ["young_spender", "disciplined_saver", "idle_cash",
-            "over_insured", "near_retiree"]
+PERSONAS = list(_BUILDERS.keys())
 
 
 def _recs(pid: str):

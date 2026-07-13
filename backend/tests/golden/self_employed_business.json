@@ -1,0 +1,158 @@
+{
+  "persona_id": "self_employed_business",
+  "fingerprint": {
+    "persona_id": "self_employed_business",
+    "age": 47,
+    "monthly_income": {
+      "value": 12000000,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "savings_ratio": {
+      "value": 0.2193,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "spend_leaks": {
+      "value": [
+        {
+          "category_code": "SHOPPING",
+          "monthly_amount": 700185,
+          "txn_count": 12
+        },
+        {
+          "category_code": "DINING",
+          "monthly_amount": 599903,
+          "txn_count": 12
+        },
+        {
+          "category_code": "FOOD_DELIVERY",
+          "monthly_amount": 350000,
+          "txn_count": 52
+        },
+        {
+          "category_code": "SUBSCRIPTION",
+          "monthly_amount": 154800,
+          "txn_count": 24
+        }
+      ],
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "sip_discipline": {
+      "value": 0.0,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "idle_cash": {
+      "value": 5952916,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "equity_holding": {
+      "value": 0,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "insurance_gap": {
+      "value": 1200000000,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "risk_capacity": {
+      "value": "MEDIUM",
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    }
+  },
+  "recommendations": [
+    {
+      "rec_id": "self_employed_business:bogle_index_sip",
+      "action": "start_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 175000,
+      "allocation": {
+        "equity_index": 100.0
+      },
+      "strategy_id": "bogle_index_sip",
+      "title": "Start a low-cost index SIP from your food-delivery spend",
+      "money_figures": {
+        "amount": 175000,
+        "leak": 350000,
+        "projection": 56104945
+      },
+      "pct_figures": {},
+      "year_figures": {
+        "horizon": 13
+      },
+      "numeric_claims": [
+        "₹1,750",
+        "₹3,500",
+        "₹5.61 lakh",
+        "₹5.61 लाख",
+        "13 years",
+        "13 साल",
+        "100%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "bogle_index_sip",
+        "source_principle": "Jack Bogle (Vanguard) — low-cost passive indexing; costs matter",
+        "inputs_used": {
+          "food_leak": 350000,
+          "years": 13
+        },
+        "math_steps": [
+          "food-delivery leak = 350000 paise/mo",
+          "redirect 50% = 175000 paise/mo",
+          "FV over 13y @10% = 56104945 paise"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": "100% equity exceeds the 60% ceiling for a MEDIUM risk-capacity investor aged 47."
+      },
+      "status": "VETO"
+    },
+    {
+      "rec_id": "self_employed_business:swensen_diversify",
+      "action": "diversify_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 1200000,
+      "allocation": {
+        "equity_index": 40.0,
+        "international_equity": 20.0,
+        "gilt": 25.0,
+        "reit": 15.0
+      },
+      "strategy_id": "swensen_diversify",
+      "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 1200000
+      },
+      "pct_figures": {},
+      "year_figures": {},
+      "numeric_claims": [
+        "₹12,000",
+        "40%",
+        "20%",
+        "25%",
+        "15%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "swensen_diversify",
+        "source_principle": "David Swensen (Yale) — allocation first, security selection second; equity-oriented diversification",
+        "inputs_used": {
+          "monthly_income": 12000000
+        },
+        "math_steps": [
+          "diversified SIP = 10% of income = 1200000 paise/mo"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

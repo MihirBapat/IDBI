@@ -338,7 +338,8 @@ def tts(text: str = Query(...), voice: str = Query("en-IN-NeerjaNeural")) -> Res
 
         async def _synth() -> bytes:
             chunks = bytearray()
-            communicate = edge_tts.Communicate(text, voice)
+            # Gentle prosody so the neural voice sounds warm, not flat/monotone.
+            communicate = edge_tts.Communicate(text, voice, rate="-3%", pitch="+3Hz")
             async for chunk in communicate.stream():
                 if chunk["type"] == "audio":
                     chunks.extend(chunk["data"])

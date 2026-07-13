@@ -1,0 +1,90 @@
+{
+  "persona_id": "rural_saver",
+  "fingerprint": {
+    "persona_id": "rural_saver",
+    "age": 40,
+    "monthly_income": {
+      "value": 4500000,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "savings_ratio": {
+      "value": 0.6814,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "spend_leaks": {
+      "value": [],
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "sip_discipline": {
+      "value": 0.0,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "idle_cash": {
+      "value": 29856445,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "equity_holding": {
+      "value": 0,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "insurance_gap": {
+      "value": 540000000,
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    },
+    "risk_capacity": {
+      "value": "MEDIUM",
+      "as_of": "2026-06-24T00:00:00",
+      "confidence": 0.9
+    }
+  },
+  "recommendations": [
+    {
+      "rec_id": "rural_saver:swensen_diversify",
+      "action": "diversify_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 450000,
+      "allocation": {
+        "equity_index": 40.0,
+        "international_equity": 20.0,
+        "gilt": 25.0,
+        "reit": 15.0
+      },
+      "strategy_id": "swensen_diversify",
+      "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 450000
+      },
+      "pct_figures": {},
+      "year_figures": {},
+      "numeric_claims": [
+        "₹4,500",
+        "40%",
+        "20%",
+        "25%",
+        "15%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "swensen_diversify",
+        "source_principle": "David Swensen (Yale) — allocation first, security selection second; equity-oriented diversification",
+        "inputs_used": {
+          "monthly_income": 4500000
+        },
+        "math_steps": [
+          "diversified SIP = 10% of income = 450000 paise/mo"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

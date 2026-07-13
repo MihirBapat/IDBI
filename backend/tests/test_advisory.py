@@ -17,13 +17,14 @@ from app.config import file_sha
 from app.engines.advisory import advise
 from app.engines.behavioral import compute_fingerprint
 from app.engines.suitability import screen
+from scripts.generate_aa_data import _BUILDERS
 
 BACKEND = Path(__file__).resolve().parents[1]
 PERSONA_DIR = BACKEND / "app" / "data" / "personas"
 GOLDEN_DIR = BACKEND / "tests" / "golden"
 
-PERSONAS = ["young_spender", "disciplined_saver", "idle_cash",
-            "over_insured", "near_retiree"]
+# Cover every persona the generator produces (single source of truth).
+PERSONAS = list(_BUILDERS.keys())
 
 
 def _fp(pid: str):
