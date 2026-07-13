@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query, Response
@@ -20,15 +21,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app import store
+from app.engines import financials
 from app.engines.advisory import advise
 from app.engines.projection import future_self
 from app.engines.suitability import for_narration, screen
+from app.llm import narrator
 from app.llm.narrator import disclosure, narrate, template_narration
+from app.schemas import PersonaFI
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    # Load backend/.env (secrets like GEMINI_API_KEY) at startup only, so the
+    # test transports (which don't run lifespan) stay fully offline.
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
+    except Exception:
+        pass
     store.init()
     yield
+
+
+def _gemini_on() -> bool:
+    return bool(os.environ.get("GEMINI_API_KEY"))
 
 
 app = FastAPI(
@@ -48,8 +65,9 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "mode": "offline", "advisory_mode": store.ADVISORY_MODE}
+def health() -> dict:
+    return {"status": "ok", "mode": "gemini" if _gemini_on() else "offline",
+            "advisory_mode": store.ADVISORY_MODE, "gemini": _gemini_on()}
 
 
 # --------------------------------------------------------------------------- #
@@ -64,6 +82,7 @@ class ChatReq(BaseModel):
     persona_id: str
     text: str
     lang: str = "en"
+    history: Optional[list[dict]] = None  # [{role: 'user'|'saarthi', text: str}]
 
 
 class IntentReq(BaseModel):
@@ -128,34 +147,29 @@ def _why_text(rec, lang: str) -> str:
             + template_narration(rec, lang))
 
 
-def _advice_response(persona_id: str, fp, lang: str) -> dict:
-    if store.ADVISORY_MODE == "info_only":
-        spoken = ("In principle, a low-cost, diversified, goal-based plan tends to "
-                  "serve most investors well. I can explain the ideas, but "
-                  "recommendations are paused under governance review.")
-        nh = store.narration_hash(spoken)
-        store.write_audit(persona_id, "ADVICE", strategy_id=None, engine_ver=None,
-                          shelf_sha=None, strategy_sha=None, narration_hash=nh,
-                          suitability_outcome="info_only")
-        return {"intent": "ADVICE", "spoken_text": spoken, "recommendations": [],
-                "reasoning_trace": None, "disclosure": disclosure(lang),
-                "narration_hash": nh}
+def _panic_reply(lang: str) -> str:
+    return ("Markets move in cycles, and reacting to a dip usually locks in the loss. "
+            "Your plan was built for exactly this. Let's revisit your goals and meet "
+            "your future self before changing anything — no exits today.")
 
-    recs = for_narration(screen(fp, advise(fp)))
-    primary = recs[0]
-    spoken = narrate(primary, lang)
-    nh = store.narration_hash(spoken)
-    t = primary.reasoning_trace
-    store.write_audit(persona_id, "ADVICE", strategy_id=primary.strategy_id,
-                      engine_ver=t.engine_ver, shelf_sha=t.shelf_sha,
-                      strategy_sha=t.strategy_sha, narration_hash=nh,
-                      suitability_outcome=primary.status)
-    return {
-        "intent": "ADVICE", "spoken_text": spoken,
-        "recommendations": [r.model_dump(mode="json") for r in recs],
-        "reasoning_trace": t.model_dump(mode="json"),
-        "disclosure": disclosure(lang), "narration_hash": nh,
-    }
+
+def _deterministic_reply(intent: str, name: str, recs: list, info_only: bool,
+                         lang: str) -> str:
+    """The offline / fallback wording when Gemini is unavailable or rejected."""
+    if info_only:
+        return ("In principle, a low-cost, diversified, goal-based plan serves most "
+                "investors well. I can explain the ideas, but recommendations are "
+                "paused under governance review.")
+    if intent == "GREET":
+        return (f"Namaste {name}! I'm Saarthi, your IDBI wealth guide. I've read your "
+                "consented accounts — ask me what to do with your money, your spending, "
+                "or say 'show me my future self'.")
+    if intent == "WHY" and recs:
+        return _why_text(recs[0], lang)
+    if recs:  # ADVICE / general
+        return narrate(recs[0], lang)  # already includes the disclosure
+    return (f"Namaste {name}! Ask me what to do with your money, how you're spending, "
+            "or say 'show me my future self'.")
 
 
 @app.post("/chat")
@@ -168,77 +182,87 @@ def chat(req: ChatReq) -> dict:
 
     intent = classify_intent(req.text)
     lang = req.lang
-    name = store.load_fi(req.persona_id)["profile"]["holderName"].split()[0]
+    fi = store.load_fi(req.persona_id)
+    name = fi["profile"]["holderName"].split()[0]
+    info_only = store.ADVISORY_MODE == "info_only"
 
-    if intent == "ADVICE":
-        resp = _advice_response(req.persona_id, fp, lang)
-        resp["transcript"] = req.text
-        return resp
-
-    if intent == "WHY":
-        recs = for_narration(screen(fp, advise(fp)))
-        if store.ADVISORY_MODE == "info_only" or not recs:
-            spoken = "The reasoning behind any suggestion is always shown to you, but recommendations are paused under governance review."
-            trace = None
+    # ---- Safety guardrails: fully deterministic, never routed to the LLM ----
+    if intent in ("PANIC", "OFFTOPIC", "FUTURE_SELF"):
+        if intent == "PANIC":
+            spoken, strat = _panic_reply(lang), "marks_cycle_guardrail"
+        elif intent == "FUTURE_SELF":
+            spoken, strat = ("Let's meet the you of tomorrow. Tap to see how today's "
+                             "choices shape your retirement."), None
         else:
-            spoken = _why_text(recs[0], lang)
-            trace = recs[0].reasoning_trace.model_dump(mode="json")
+            spoken, strat = ("I'm your money guide, so I'll stay on your finances. Ask "
+                             "me about your savings, spending, or investments."), None
         nh = store.narration_hash(spoken)
-        store.write_audit(req.persona_id, "WHY",
-                          strategy_id=(recs[0].strategy_id if recs and trace else None),
-                          engine_ver=None, shelf_sha=None, strategy_sha=None,
-                          narration_hash=nh, suitability_outcome=None)
-        return {"intent": "WHY", "spoken_text": spoken, "transcript": req.text,
-                "recommendations": [], "reasoning_trace": trace,
-                "disclosure": disclosure(lang), "narration_hash": nh}
-
-    if intent == "GREET":
-        spoken = (f"Namaste {name}! I'm Saarthi, your IDBI wealth guide. "
-                  "I've read your consented accounts — ask me what to do with your money, "
-                  "or say 'show me my future self'.")
-        nh = store.narration_hash(spoken)
-        store.write_audit(req.persona_id, "GREET", strategy_id=None, engine_ver=None,
+        store.write_audit(req.persona_id, intent, strategy_id=strat, engine_ver=None,
                           shelf_sha=None, strategy_sha=None, narration_hash=nh,
                           suitability_outcome=None)
-        return {"intent": "GREET", "spoken_text": spoken, "transcript": req.text,
-                "recommendations": [], "reasoning_trace": None,
-                "disclosure": disclosure(lang), "narration_hash": nh}
+        out = {"intent": intent, "spoken_text": spoken, "transcript": req.text,
+               "recommendations": [], "reasoning_trace": None,
+               "disclosure": disclosure(lang), "narration_hash": nh}
+        if intent == "FUTURE_SELF":
+            out["future_self_url"] = f"/future-self?persona_id={req.persona_id}"
+        return out
 
-    if intent == "FUTURE_SELF":
-        spoken = ("Let's meet the you of tomorrow. Tap to see how today's choices "
-                  "shape your retirement.")
-        nh = store.narration_hash(spoken)
-        store.write_audit(req.persona_id, "FUTURE_SELF", strategy_id=None,
-                          engine_ver=None, shelf_sha=None, strategy_sha=None,
-                          narration_hash=nh, suitability_outcome=None)
-        return {"intent": "FUTURE_SELF", "spoken_text": spoken, "transcript": req.text,
-                "recommendations": [], "reasoning_trace": None,
-                "disclosure": disclosure(lang), "narration_hash": nh,
-                "future_self_url": f"/future-self?persona_id={req.persona_id}"}
+    # ---- Conversational: GREET / WHY / ADVICE / general (grounded Gemini) ----
+    recs = []
+    if not info_only and intent in ("ADVICE", "WHY"):
+        recs = for_narration(screen(fp, advise(fp)))
 
-    if intent == "PANIC":
-        # Marks cycle guardrail: never an exit path — reframe to cycles + goals.
-        spoken = ("Markets move in cycles, and reacting to a dip usually locks in the "
-                  "loss. Your plan was built for exactly this. Let's revisit your goals "
-                  "and meet your future self before changing anything — no exits today.")
-        nh = store.narration_hash(spoken)
-        store.write_audit(req.persona_id, "PANIC", strategy_id="marks_cycle_guardrail",
-                          engine_ver=None, shelf_sha=None, strategy_sha=None,
-                          narration_hash=nh, suitability_outcome=None)
-        return {"intent": "PANIC", "spoken_text": spoken, "transcript": req.text,
-                "recommendations": [], "reasoning_trace": None,
-                "disclosure": disclosure(lang), "narration_hash": nh}
+    spoken = None
+    if not info_only:
+        persona = PersonaFI.model_validate(fi)
+        summ = financials.summary(persona, fp)
+        claimset = financials.grounding_claims(summ, recs)
+        context = financials.grounding_context(summ, recs)
+        spoken = narrator.converse(req.text, context, claimset, lang, req.history)
 
-    # OFFTOPIC
-    spoken = ("I'm your money guide, so I'll stay on your finances. "
-              "Ask me about your savings, spending, or investments.")
+    used_gemini = spoken is not None
+    if spoken is None:
+        spoken = _deterministic_reply(intent, name, recs, info_only, lang)
+    if info_only:
+        recs = []
+
+    # Append the SEBI disclosure for money-advice turns (narrate already has it).
+    disc = disclosure(lang)
+    if intent in ("ADVICE", "WHY") and not info_only and disc not in spoken:
+        spoken = f"{spoken}\n\n{disc}"
+
+    primary = recs[0] if recs else None
+    trace = primary.reasoning_trace.model_dump(mode="json") if primary else None
     nh = store.narration_hash(spoken)
-    store.write_audit(req.persona_id, "OFFTOPIC", strategy_id=None, engine_ver=None,
-                      shelf_sha=None, strategy_sha=None, narration_hash=nh,
-                      suitability_outcome=None)
-    return {"intent": "OFFTOPIC", "spoken_text": spoken, "transcript": req.text,
-            "recommendations": [], "reasoning_trace": None,
-            "disclosure": disclosure(lang), "narration_hash": nh}
+    store.write_audit(
+        req.persona_id, intent,
+        strategy_id=(primary.strategy_id if primary else None),
+        engine_ver=(primary.reasoning_trace.engine_ver if primary else None),
+        shelf_sha=(primary.reasoning_trace.shelf_sha if primary else None),
+        strategy_sha=(primary.reasoning_trace.strategy_sha if primary else None),
+        narration_hash=nh,
+        suitability_outcome=(primary.status if primary else
+                             ("info_only" if info_only else None)),
+    )
+    return {"intent": intent, "spoken_text": spoken, "transcript": req.text,
+            "recommendations": [r.model_dump(mode="json") for r in recs],
+            "reasoning_trace": trace, "disclosure": disc, "narration_hash": nh,
+            "source": "gemini" if used_gemini else "template"}
+
+
+# --------------------------------------------------------------------------- #
+# Financial snapshot (side panel: history, records & state)
+# --------------------------------------------------------------------------- #
+
+@app.get("/financials")
+def financials_endpoint(persona_id: str = Query(...)) -> dict:
+    _require_consent(persona_id)
+    fp = store.get_fingerprint(persona_id)
+    if fp is None:
+        store.grant_consent(persona_id)
+        fp = store.get_fingerprint(persona_id)
+    persona = PersonaFI.model_validate(store.load_fi(persona_id))
+    return financials.summary(persona, fp)
 
 
 # --------------------------------------------------------------------------- #

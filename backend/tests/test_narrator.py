@@ -120,6 +120,19 @@ def test_default_mode_is_template_without_key(monkeypatch):
 # (c) Injection strings never reach the prompt payload
 # --------------------------------------------------------------------------- #
 
+def test_converse_is_offline_without_key(monkeypatch):
+    """The grounded conversational path must no-op (return None) with no key, so
+    the deterministic template is used and tests never touch the network."""
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    def boom(system, user):
+        raise AssertionError("Gemini must not be called without a key")
+
+    monkeypatch.setattr(narrator, "_gemini_generate", boom)
+    assert narrator.converse("what should I do?", "CONTEXT: balance ₹40,000",
+                             ["₹40,000"], "en") is None
+
+
 def test_injection_never_in_prompt():
     # young_spender's raw AA narrations include the injection canary.
     raw = (PERSONA_DIR / "young_spender.json").read_text("utf-8")

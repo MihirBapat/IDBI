@@ -5,8 +5,14 @@ import type {
   AuditRow,
   ChatResponse,
   ConsentSummary,
+  Financials,
   ProjectionScript,
 } from "./types";
+
+export interface ChatTurn {
+  role: "user" | "saarthi";
+  text: string;
+}
 
 export const API =
   process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -52,9 +58,16 @@ export function revokeConsent(persona_id: string): Promise<{ revoked: boolean }>
 export function chat(
   persona_id: string,
   text: string,
+  history: ChatTurn[] = [],
   lang = "en",
 ): Promise<ChatResponse> {
-  return jsonPost("/chat", { persona_id, text, lang }).then((r) => toJson(r));
+  return jsonPost("/chat", { persona_id, text, lang, history }).then((r) => toJson(r));
+}
+
+export function getFinancials(persona_id: string): Promise<Financials> {
+  return fetch(`${API}/financials?persona_id=${encodeURIComponent(persona_id)}`).then(
+    (r) => toJson(r),
+  );
 }
 
 export function futureSelf(

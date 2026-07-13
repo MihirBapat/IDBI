@@ -45,6 +45,53 @@ export interface ChatResponse {
   disclosure: string;
   narration_hash: string;
   future_self_url?: string;
+  source?: "gemini" | "template";
+}
+
+export interface SpendItem {
+  category: string;
+  monthly_paise: number;
+  monthly_display: string;
+  txn_count: number;
+}
+
+export interface RecentTxn {
+  date: string;
+  category: string;
+  type: "CREDIT" | "DEBIT";
+  amount_display: string;
+  narration: string;
+}
+
+export interface Financials {
+  name: string;
+  age: number;
+  risk_capacity: string;
+  balance_paise: number;
+  balance_display: string;
+  monthly_income_display: string;
+  savings_ratio_pct: number;
+  sip_discipline_pct: number;
+  idle_cash_display: string;
+  equity_holding_display: string;
+  insurance_gap_display: string;
+  spend_leaks: { category: string; monthly_display: string }[];
+  spending: SpendItem[];
+  holdings: {
+    fixed_deposits: {
+      name: string;
+      principal_display: string;
+      rate_display: string;
+      maturity_display: string;
+    }[];
+    mutual_funds: {
+      scheme: string;
+      current_display: string;
+      cost_display: string;
+      sip: boolean;
+    }[];
+  };
+  recent: RecentTxn[];
 }
 
 export interface ProjectionLine {

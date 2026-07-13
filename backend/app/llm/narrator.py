@@ -159,6 +159,71 @@ def _call_gemini(prompt: dict, lang: str) -> str:  # pragma: no cover - network
     return resp.text
 
 
+def _gemini_model() -> str:
+    return os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+
+
+def _gemini_generate(system: str, user: str) -> str:  # pragma: no cover - network
+    """Single grounded Gemini call for the conversational chat."""
+    import google.generativeai as genai
+
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel(_gemini_model(), system_instruction=system)
+    resp = model.generate_content(user)
+    return resp.text
+
+
+def _clean(text: str) -> str:
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.strip("`").strip()
+    for prefix in ("Saarthi:", "SAARTHI:"):
+        if text.startswith(prefix):
+            text = text[len(prefix):].strip()
+    return text
+
+
+def converse(user_text: str, context: str, claimset: list[str], lang: str = "en",
+             history: Optional[list[dict]] = None) -> Optional[str]:
+    """Grounded conversational reply (the 'feels real' path).
+
+    Uses Gemini to phrase a natural answer to the customer's actual message, but
+    strictly grounded in ``context`` (their real financial facts + engine
+    recommendations). The numeral validator enforces that no figure outside
+    ``claimset`` survives — one retry, then ``None`` so the caller falls back to
+    the deterministic template. Returns ``None`` whenever Gemini is unavailable.
+    """
+    if not os.environ.get("GEMINI_API_KEY"):
+        return None
+
+    system = (
+        "You are Saarthi, a warm, concise wealth guide for IDBI Bank speaking to a "
+        "customer. Answer their message directly in 2-4 short, friendly sentences in "
+        f"{lang}. You MUST only state numbers (rupee amounts, %, years, ages) that "
+        "appear verbatim in the CONTEXT; NEVER invent or recompute a figure. If you "
+        "lack a number, speak qualitatively. Do not give tips on individual stocks; "
+        "keep to the recommendations and facts provided."
+    )
+    convo = ""
+    if history:
+        convo = "\n".join(
+            f"{'Customer' if m.get('role') == 'user' else 'Saarthi'}: {m.get('text', '')}"
+            for m in history[-6:]
+        )
+    user = (f"CONTEXT:\n{context}\n\n"
+            + (f"Conversation so far:\n{convo}\n\n" if convo else "")
+            + f"Customer: {user_text}\nSaarthi:")
+
+    try:
+        for _ in range(2):  # initial + one retry
+            candidate = _clean(_gemini_generate(system, user))
+            if validate(candidate, claimset):
+                return candidate
+    except Exception:
+        return None
+    return None
+
+
 def narrate(rec: Recommendation, lang: str = "en", mode: Optional[str] = None) -> str:
     """Render a recommendation to validated prose with the disclosure appended."""
     resolved = _resolve_mode(mode)
