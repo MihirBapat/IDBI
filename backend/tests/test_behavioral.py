@@ -77,8 +77,9 @@ def test_near_retiree_low_risk():
 # Invariants
 # --------------------------------------------------------------------------- #
 
-PERSONAS = ["young_spender", "disciplined_saver", "idle_cash",
-            "over_insured", "near_retiree"]
+from scripts.generate_aa_data import _BUILDERS
+
+PERSONAS = list(_BUILDERS.keys())
 
 
 @pytest.mark.parametrize("pid", PERSONAS)

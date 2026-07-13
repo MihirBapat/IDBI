@@ -1,4 +1,4 @@
-"""Regenerate golden advice fixtures for the five personas.
+"""Regenerate golden advice fixtures for every synthetic persona.
 
 Writes ``tests/golden/{persona}.json`` = the deterministic, suitability-screened
 recommendation list (plus the fingerprint) for each persona. These are the CI
@@ -20,9 +20,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/ on path
 from app.engines.advisory import advise
 from app.engines.behavioral import compute_fingerprint
 from app.engines.suitability import screen
+from scripts.generate_aa_data import _BUILDERS
 
-PERSONAS = ["young_spender", "disciplined_saver", "idle_cash",
-            "over_insured", "near_retiree"]
+# Single source of truth: every persona the generator knows about gets a golden.
+PERSONAS = list(_BUILDERS.keys())
 BACKEND = Path(__file__).resolve().parents[1]
 PERSONA_DIR = BACKEND / "app" / "data" / "personas"
 GOLDEN_DIR = BACKEND / "tests" / "golden"

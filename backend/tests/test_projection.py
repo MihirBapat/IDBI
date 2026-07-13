@@ -10,8 +10,10 @@ import pytest
 from app.engines.behavioral import compute_fingerprint
 from app.engines.projection import (EQUITY_NOMINAL, fd_maturity, future_self,
                                     retirement_corpus, sip_future_value)
+from scripts.generate_aa_data import _BUILDERS
 
 PERSONA_DIR = Path(__file__).resolve().parents[1] / "app" / "data" / "personas"
+PERSONAS = list(_BUILDERS.keys())
 
 
 def _fp(pid: str):
@@ -44,8 +46,7 @@ def test_retirement_corpus_uses_horizon_to_60():
     assert retirement_corpus(240000, 27) == sip_future_value(240000, 33, EQUITY_NOMINAL)
 
 
-@pytest.mark.parametrize("pid", ["young_spender", "disciplined_saver", "idle_cash",
-                                 "over_insured", "near_retiree"])
+@pytest.mark.parametrize("pid", PERSONAS)
 def test_future_self_good_beats_bad(pid):
     fp = _fp(pid)
     good = future_self(fp, take_advice=True)

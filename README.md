@@ -14,7 +14,7 @@ rupee figure it says is calculated by a careful, checkable program (not made up 
 
 ## What you'll see when it runs
 
-1. A welcome screen with **five sample customers** — pick one (e.g. *Aarav, age 27*).
+1. A welcome screen with **15 sample customers** — pick one (e.g. *Aarav, age 27*).
 2. A consent screen (like India's Account Aggregator) — click **Approve**.
 3. Saarthi greets the customer by name and gives advice such as:
    *"You spend about **₹4,800/month** on food delivery. Put just **₹2,400** of it into a
@@ -100,7 +100,7 @@ http://localhost:3000
 
 ## Part 3 — How to use it (click by click)
 
-1. **Pick a customer.** Click one of the five cards (try **Aarav Sharma**).
+1. **Pick a customer.** Click one of the customer cards (try **Aarav Sharma**).
 2. **Approve consent.** A sheet appears explaining what data is shared. Click **Approve & continue**.
 3. **Say hello.** Saarthi greets the customer by name.
 4. **Ask for advice.** Click the suggestion **"What should I do with my money?"** (or type
@@ -142,7 +142,7 @@ Your computer is left exactly as before.
 
 ## Good to know
 
-- **It's a demo with sample data.** The five customers are invented; no real bank or personal
+- **It's a demo with sample data.** The 15 customers are invented; no real bank or personal
   data is used. Product rates shown are illustrative.
 - **It works completely offline** — no API keys, no sign-ups, no internet needed.
 - **The advice is trustworthy by design:** a careful program calculates every number; the
@@ -166,7 +166,7 @@ Technical details, the 2-minute demo script, and the compliance/governance evide
 Quick technical facts: Python/FastAPI backend (deterministic advisory engines + a firewalled
 Gemini narrator that defaults to offline templates) · Next.js avatar PWA (Gemini-style chat +
 live financial side panel from `GET /financials`) · SQLite · money is integer paise everywhere.
-Run the test suite from `backend/` (with the venv active): `pytest` (**117 tests**, offline).
+Run the test suite from `backend/` (with the venv active): `pytest` (**247 tests**, offline).
 
 **Enable live Gemini chat (optional):** copy `backend/.env.example` to `backend/.env` and set
 `GEMINI_API_KEY` (a standard AI Studio key, `AIza…`, from https://aistudio.google.com/apikey;

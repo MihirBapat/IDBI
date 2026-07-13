@@ -11,7 +11,7 @@ Scaffold exists as of Part 1. Verified working commands (Windows host):
 - Backend venv: `cd backend && python -m venv .venv && .venv\Scripts\activate`. Deps are pinned in `backend/requirements.txt` (`pip install -r requirements.txt`).
 - **Never install anything system-wide or globally. If something truly needs a system-level install, STOP and ask the user first** (RULES.MD).
 - Run API: `uvicorn app.main:app --reload` from `backend/` → `GET /health` returns `{"status":"ok","mode":"offline","advisory_mode":"on"}`. Endpoints: `POST /consent`, `DELETE /consent?persona_id=`, `POST /chat`, `GET /future-self`, `POST /intent`, `GET /audit`, `GET /tts`. Env: `GEMINI_API_KEY` (opt-in LLM narration; default offline template), `ADVISORY_MODE=on|info_only` (governance kill-switch), `DHANSAARTHI_DB` (SQLite path; default `dhansaarthi.sqlite`, gitignored), `ENABLE_TTS` (else `/tts` → 503 and frontend uses browser speech).
-- Tests: `pytest` from `backend/` (116 passing as of Part 5). Tests must stay in offline/template mode — never call Gemini or edge-tts.
+- Tests: `pytest` from `backend/` (247 passing; parametrized suites cover all 15 personas). Tests must stay in offline/template mode — never call Gemini or edge-tts.
 - Regenerate synthetic AA data: `python scripts/generate_aa_data.py` from `backend/` → writes `app/data/personas/{persona_id}.json` (deterministic, byte-identical across runs).
 - Regenerate advice golden fixtures: `python scripts/build_goldens.py`; regenerate cached demo narration: `python scripts/build_golden_script.py` (both from `backend/`, deterministic — a config/engine change is a reviewable diff).
 - Regenerate golden advice fixtures: `python scripts/build_goldens.py` from `backend/` → writes `tests/golden/{persona}.json` (advise+screen output; a deliberate config/engine change is a reviewable golden diff).
@@ -26,13 +26,13 @@ Full detail in [docs/architecture.md](docs/architecture.md) — read it before s
 3. **Consent is the schema.** FI data enters only via the AA framework (synthetic generator emits ReBIT-schema FI-JSON from day 1). Check consent at read time on every turn, not just at fetch. Revocation → erasure (DPDP).
 4. **Graceful degradation.** Every dependency has a tested fallback (L0–L4 ladder): LLM→templates, edge-tts→browser speech, WebGL→2D portrait, no-AA→declared-data mode. The demo must run fully offline (no-LLM mode).
 
-Repo layout (PRD §9): `backend/app/engines/` (behavioral, advisory, projection — pure, deterministic, unit-tested), `backend/app/llm/narrator.py` (Gemini + offline fallback), `backend/app/data/*.yaml` (product shelf + strategy library — config as product, every trace pins their versions), `backend/scripts/generate_aa_data.py` (5 personas), `frontend/components/AvatarStage.tsx`.
+Repo layout (PRD §9): `backend/app/engines/` (behavioral, advisory, projection — pure, deterministic, unit-tested), `backend/app/llm/narrator.py` (Gemini + offline fallback), `backend/app/data/*.yaml` (product shelf + strategy library — config as product, every trace pins their versions), `backend/scripts/generate_aa_data.py` (15 personas), `frontend/components/AvatarStage.tsx`.
 
 Non-obvious decisions (rationale in architecture doc §11): modular monolith, not microservices; client-side avatar rendering only; money is integer paise everywhere — no floats, ₹ lakh/crore formatting happens in the engine, never in the LLM; raw merchant strings are quarantined at ingest (prompt-injection surface) — only closed-vocabulary category codes reach prompts; projections use conservative returns only (10% equity / 6.5% debt nominal).
 
 ## 4. Conventions & workflow
 
-- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 5 (Hardening & submission) complete** — offline-demo + fairness tests, cached golden script, pinned deps (pip-audit clean), README + gate-evidence docs; all 5 parts done, `pytest` 116 passing, fresh-clone verified. See [IMPLEMENTATION.md](IMPLEMENTATION.md).
+- Build order: follow PRD §8 phases / §9 milestone prompts strictly, in order. Current stage: **Part 5 (Hardening & submission) complete** — offline-demo + fairness tests, cached golden script, pinned deps (pip-audit clean), README + gate-evidence docs; all 5 parts done, `pytest` 247 passing, fresh-clone verified. See [IMPLEMENTATION.md](IMPLEMENTATION.md).
 - Every feature must move a bank metric (SIP conversion, CASA, cross-sell, RM cost) — think as an IDBI financial manager (RULES.MD).
 - Every engine output must carry a `reasoning_trace` naming the strategy applied (PRD §3A); write pytest cases per persona for each engine before moving on.
 - Every LLM-facing response gets the SEBI disclosure footer appended **in code, not in the prompt**.

@@ -1,0 +1,185 @@
+{
+  "persona_id": "single_parent",
+  "fingerprint": {
+    "persona_id": "single_parent",
+    "age": 36,
+    "monthly_income": {
+      "value": 6800000,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "savings_ratio": {
+      "value": 0.3072,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "spend_leaks": {
+      "value": [
+        {
+          "category_code": "FOOD_DELIVERY",
+          "monthly_amount": 200000,
+          "txn_count": 47
+        }
+      ],
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "sip_discipline": {
+      "value": 0.0,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "idle_cash": {
+      "value": 11087454,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "equity_holding": {
+      "value": 0,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "insurance_gap": {
+      "value": 744000000,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "risk_capacity": {
+      "value": "HIGH",
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    }
+  },
+  "recommendations": [
+    {
+      "rec_id": "single_parent:bogle_index_sip",
+      "action": "start_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 100000,
+      "allocation": {
+        "equity_index": 100.0
+      },
+      "strategy_id": "bogle_index_sip",
+      "title": "Start a low-cost index SIP from your food-delivery spend",
+      "money_figures": {
+        "amount": 100000,
+        "leak": 200000,
+        "projection": 119960568
+      },
+      "pct_figures": {},
+      "year_figures": {
+        "horizon": 24
+      },
+      "numeric_claims": [
+        "₹1,000",
+        "₹2,000",
+        "₹12 lakh",
+        "₹12 लाख",
+        "24 years",
+        "24 साल",
+        "100%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "bogle_index_sip",
+        "source_principle": "Jack Bogle (Vanguard) — low-cost passive indexing; costs matter",
+        "inputs_used": {
+          "food_leak": 200000,
+          "years": 24
+        },
+        "math_steps": [
+          "food-delivery leak = 200000 paise/mo",
+          "redirect 50% = 100000 paise/mo",
+          "FV over 24y @10% = 119960568 paise"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    },
+    {
+      "rec_id": "single_parent:swensen_diversify",
+      "action": "diversify_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 680000,
+      "allocation": {
+        "equity_index": 40.0,
+        "international_equity": 20.0,
+        "gilt": 25.0,
+        "reit": 15.0
+      },
+      "strategy_id": "swensen_diversify",
+      "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 680000
+      },
+      "pct_figures": {},
+      "year_figures": {},
+      "numeric_claims": [
+        "₹6,800",
+        "40%",
+        "20%",
+        "25%",
+        "15%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "swensen_diversify",
+        "source_principle": "David Swensen (Yale) — allocation first, security selection second; equity-oriented diversification",
+        "inputs_used": {
+          "monthly_income": 6800000
+        },
+        "math_steps": [
+          "diversified SIP = 10% of income = 680000 paise/mo"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    },
+    {
+      "rec_id": "single_parent:buffett_9010",
+      "action": "deploy_9010",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 11087454,
+      "allocation": {
+        "equity_index": 90.0,
+        "gilt": 10.0
+      },
+      "strategy_id": "buffett_9010",
+      "title": "Put surplus to work with a Buffett 90/10 split",
+      "money_figures": {
+        "amount": 11087454,
+        "bucket_equity_index": 9978709,
+        "bucket_gilt": 1108745
+      },
+      "pct_figures": {},
+      "year_figures": {},
+      "numeric_claims": [
+        "₹1.11 lakh",
+        "₹1.11 लाख",
+        "₹99,787",
+        "₹11,087",
+        "90%",
+        "10%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "buffett_9010",
+        "source_principle": "Warren Buffett — 90/10 index-plus-bills for hands-off investors; long holding periods",
+        "inputs_used": {
+          "idle_cash": 11087454
+        },
+        "math_steps": [
+          "deploy 11087454 paise as 90/10 index/gilt"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

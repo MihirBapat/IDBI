@@ -1,0 +1,187 @@
+{
+  "persona_id": "senior_pensioner",
+  "fingerprint": {
+    "persona_id": "senior_pensioner",
+    "age": 61,
+    "monthly_income": {
+      "value": 5500000,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "savings_ratio": {
+      "value": 0.5107,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "spend_leaks": {
+      "value": [],
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "sip_discipline": {
+      "value": 0.0,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "idle_cash": {
+      "value": 54453393,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "equity_holding": {
+      "value": 0,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "insurance_gap": {
+      "value": 660000000,
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    },
+    "risk_capacity": {
+      "value": "LOW",
+      "as_of": "2026-06-25T00:00:00",
+      "confidence": 0.9
+    }
+  },
+  "recommendations": [
+    {
+      "rec_id": "senior_pensioner:dalio_all_weather",
+      "action": "deploy_all_weather",
+      "product_ref": "idbi_gilt_fund",
+      "amount_paise": 54453393,
+      "allocation": {
+        "equity_index": 25.0,
+        "gilt": 30.0,
+        "gold_sgb": 15.0,
+        "liquid": 30.0
+      },
+      "strategy_id": "dalio_all_weather",
+      "title": "Deploy idle cash into a capital-preserving All-Weather mix",
+      "money_figures": {
+        "amount": 54453393,
+        "bucket_equity_index": 13613348,
+        "bucket_gilt": 16336018,
+        "bucket_gold_sgb": 8168009,
+        "bucket_liquid": 16336018
+      },
+      "pct_figures": {},
+      "year_figures": {},
+      "numeric_claims": [
+        "₹5.45 lakh",
+        "₹5.45 लाख",
+        "₹1.36 lakh",
+        "₹1.36 लाख",
+        "₹1.63 lakh",
+        "₹1.63 लाख",
+        "₹81,680",
+        "25%",
+        "30%",
+        "15%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "dalio_all_weather",
+        "source_principle": "Ray Dalio (Bridgewater) — All-Weather / risk parity across economic regimes",
+        "inputs_used": {
+          "idle_cash": 54453393
+        },
+        "math_steps": [
+          "deploy idle 54453393 paise across {'equity_index': 25.0, 'gilt': 30.0, 'gold_sgb': 15.0, 'liquid': 30.0}"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    },
+    {
+      "rec_id": "senior_pensioner:markowitz_concentration",
+      "action": "move_to_fd",
+      "product_ref": "idbi_fd_3y",
+      "amount_paise": 54453393,
+      "allocation": {
+        "fd_ladder": 100.0
+      },
+      "strategy_id": "markowitz_concentration",
+      "title": "Move idle savings into a laddered IDBI FD",
+      "money_figures": {
+        "amount": 54453393,
+        "extra": 2314269
+      },
+      "pct_figures": {
+        "fd_rate": 7.25,
+        "savings_rate": 3.0
+      },
+      "year_figures": {},
+      "numeric_claims": [
+        "₹5.45 lakh",
+        "₹5.45 लाख",
+        "₹23,143",
+        "7.25%",
+        "3%",
+        "100%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "markowitz_concentration",
+        "source_principle": "Harry Markowitz (MPT) — diversification is the only free lunch; concentration is risk",
+        "inputs_used": {
+          "idle_cash": 54453393,
+          "fd_rate": 7.25,
+          "savings_rate": 3.0
+        },
+        "math_steps": [
+          "idle cash = 54453393 paise (100% cash concentration)",
+          "IDBI FD 7.25% vs SB 3.0%",
+          "extra interest/yr = 54453393*(7.25-3.0)/100 = 2314269 paise"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": null
+      },
+      "status": "PASS"
+    },
+    {
+      "rec_id": "senior_pensioner:swensen_diversify",
+      "action": "diversify_sip",
+      "product_ref": "idbi_nifty_index",
+      "amount_paise": 550000,
+      "allocation": {
+        "equity_index": 40.0,
+        "international_equity": 20.0,
+        "gilt": 25.0,
+        "reit": 15.0
+      },
+      "strategy_id": "swensen_diversify",
+      "title": "Diversify thin equity across a Swensen-style mix",
+      "money_figures": {
+        "amount": 550000
+      },
+      "pct_figures": {},
+      "year_figures": {},
+      "numeric_claims": [
+        "₹5,500",
+        "40%",
+        "20%",
+        "25%",
+        "15%"
+      ],
+      "reasoning_trace": {
+        "strategy_id": "swensen_diversify",
+        "source_principle": "David Swensen (Yale) — allocation first, security selection second; equity-oriented diversification",
+        "inputs_used": {
+          "monthly_income": 5500000
+        },
+        "math_steps": [
+          "diversified SIP = 10% of income = 550000 paise/mo"
+        ],
+        "engine_ver": "advisory-1.0.0",
+        "shelf_sha": "ca5f3e3c0df1",
+        "strategy_sha": "6dcdc5bea3d6",
+        "refusal_reason": "60% equity exceeds the 30% ceiling for a LOW risk-capacity investor aged 61."
+      },
+      "status": "VETO"
+    }
+  ]
+}

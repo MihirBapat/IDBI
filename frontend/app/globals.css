@@ -156,12 +156,40 @@ a { color: var(--green-bright); }
 .gov-table th { color: var(--muted); font-weight: 500; }
 .gov-empty { color: var(--muted); font-size: 13px; margin-top: 16px; }
 
-/* ---- Avatar SVG animation ---- */
-.mouth { transform-origin: 100px 132px; transition: transform 0.1s; }
-.mouth.talk { animation: talk 0.26s ease-in-out infinite alternate; }
-@keyframes talk { from { transform: scaleY(0.45); } to { transform: scaleY(1.15); } }
-.eyes { transform-origin: center; animation: blink 5s infinite; }
-@keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97.5% { transform: scaleY(0.1); } }
+/* ---- Saarthi orb avatar (emotive "spark", no human face) ---- */
+.saarthi-orb { display: block; border-radius: 50%; transition: filter .25s ease, transform .25s ease; }
+.saarthi-orb.speaking { filter: drop-shadow(0 0 10px rgba(37,192,120,0.5)); }
+.saarthi-orb.aged.speaking { filter: drop-shadow(0 0 10px rgba(233,184,90,0.5)); }
+
+/* Idle: the orb gently breathes and drifts so it always feels alive. */
+.orb-core, .orb-aura, .orb-blob, .ring-a, .ring-b, .eq-bar {
+  transform-box: fill-box; transform-origin: center;
+}
+.orb-core { animation: orb-breathe 3.6s ease-in-out infinite; }
+.orb-aura { animation: orb-aura 3.6s ease-in-out infinite; }
+.orb-shine { animation: orb-shine 6s ease-in-out infinite; }
+.orb-blob { animation: orb-blob 7s ease-in-out infinite; }
+.ring-a { animation: orb-spin 15s linear infinite; }
+.ring-b { animation: orb-spin 22s linear infinite reverse; }
+
+/* Voice equalizer: hidden as a calm dot when idle, alive while speaking. */
+.orb-eq .eq-bar { transform: scaleY(0.28); opacity: 0; transition: opacity .2s ease; }
+.orb-idle-dot { transition: opacity .25s ease; }
+.saarthi-orb.speaking .orb-eq .eq-bar { opacity: 1; animation: orb-eq 0.5s ease-in-out infinite alternate; }
+.saarthi-orb.speaking .orb-idle-dot { opacity: 0; }
+.saarthi-orb.speaking .orb-core { animation: orb-breathe 1.05s ease-in-out infinite; }
+.saarthi-orb.speaking .orb-aura { animation: orb-aura 1.05s ease-in-out infinite; }
+
+@keyframes orb-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes orb-aura { 0%,100% { transform: scale(1); opacity: .7; } 50% { transform: scale(1.07); opacity: 1; } }
+@keyframes orb-shine { 0%,100% { transform: translate(0,0); opacity: .35; } 50% { transform: translate(4px,3px); opacity: .5; } }
+@keyframes orb-blob { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-6px,-5px) scale(1.18); } }
+@keyframes orb-spin { to { transform: rotate(360deg); } }
+@keyframes orb-eq { from { transform: scaleY(0.28); } to { transform: scaleY(1.2); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-core, .orb-aura, .orb-shine, .orb-blob, .ring-a, .ring-b, .eq-bar { animation: none !important; }
+}
 
 .section-title { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin: 4px 0 10px; }
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
@@ -182,8 +210,6 @@ a { color: var(--green-bright); }
 .gem-chat { height: 100%; overflow: hidden; display: flex; flex-direction: column; padding: 0 clamp(10px, 2.5vw, 26px); }
 
 .assistant-header { display: flex; gap: 12px; align-items: center; padding: 14px 2px 10px; border-bottom: 1px solid var(--border); }
-.saarthi-av { border-radius: 50%; box-shadow: 0 0 0 2px var(--border); transition: box-shadow .2s; }
-.saarthi-av.speaking { box-shadow: 0 0 0 3px var(--green), 0 0 18px rgba(16,160,95,0.45); }
 .assistant-id { min-width: 0; }
 .assistant-name { font-weight: 650; display: flex; gap: 8px; align-items: baseline; }
 .assistant-status { font-size: 11px; color: var(--muted); font-weight: 400; }
