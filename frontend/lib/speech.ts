@@ -4,12 +4,34 @@
 
 import { API } from "./api";
 
-/** Speak text; resolves when playback ends (or immediately if unavailable). */
+/** Race a promise against a max duration so speech never blocks forever. */
+function withTimeout(p: Promise<void>, ms: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (!done) {
+        done = true;
+        resolve();
+      }
+    };
+    const t = setTimeout(finish, ms);
+    p.then(() => {
+      clearTimeout(t);
+      finish();
+    }).catch(() => {
+      clearTimeout(t);
+      finish();
+    });
+  });
+}
+
+/** Speak text; resolves when playback ends, on error, or after a safety cap. */
 export async function speak(
   text: string,
   opts: { onStart?: () => void; onEnd?: () => void } = {},
 ): Promise<void> {
   const body = speechBody(text);
+  const cap = Math.min(20000, Math.max(3500, body.length * 70)); // safety ceiling
   opts.onStart?.();
 
   // 1) Try neural TTS from the backend.
@@ -17,15 +39,18 @@ export async function speak(
     const res = await fetch(`${API}/tts?text=${encodeURIComponent(body)}`);
     if (res.ok) {
       const url = URL.createObjectURL(await res.blob());
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(url);
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          resolve();
-        };
-        audio.onerror = () => resolve();
-        audio.play().catch(() => resolve());
-      });
+      await withTimeout(
+        new Promise<void>((resolve) => {
+          const audio = new Audio(url);
+          audio.onended = () => {
+            URL.revokeObjectURL(url);
+            resolve();
+          };
+          audio.onerror = () => resolve();
+          audio.play().catch(() => resolve());
+        }),
+        cap,
+      );
       opts.onEnd?.();
       return;
     }
@@ -33,17 +58,21 @@ export async function speak(
     /* fall through to browser speech */
   }
 
-  // 2) Browser SpeechSynthesis fallback.
+  // 2) Browser SpeechSynthesis fallback (some browsers never fire onend →
+  //    the timeout guarantees resolution).
   if (typeof window !== "undefined" && "speechSynthesis" in window) {
-    await new Promise<void>((resolve) => {
-      const u = new SpeechSynthesisUtterance(body);
-      u.lang = "en-IN";
-      u.rate = 1.0;
-      u.onend = () => resolve();
-      u.onerror = () => resolve();
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    });
+    await withTimeout(
+      new Promise<void>((resolve) => {
+        const u = new SpeechSynthesisUtterance(body);
+        u.lang = "en-IN";
+        u.rate = 1.0;
+        u.onend = () => resolve();
+        u.onerror = () => resolve();
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }),
+      cap,
+    );
   }
   opts.onEnd?.();
 }

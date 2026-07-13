@@ -164,9 +164,16 @@ Technical details, the 2-minute demo script, and the compliance/governance evide
 - **2-minute pitch script:** [docs/pitch.md](docs/pitch.md)
 
 Quick technical facts: Python/FastAPI backend (deterministic advisory engines + a firewalled
-Gemini narrator that defaults to offline templates) · Next.js avatar PWA · SQLite · money is
-integer paise everywhere. Run the test suite from `backend/` (with the venv active): `pytest`
-(**116 tests**, offline). Optional flags: `GEMINI_API_KEY` (LLM narration), `ENABLE_TTS=1`
-(neural voice), `ADVISORY_MODE=info_only` (governance kill-switch).
+Gemini narrator that defaults to offline templates) · Next.js avatar PWA (Gemini-style chat +
+live financial side panel from `GET /financials`) · SQLite · money is integer paise everywhere.
+Run the test suite from `backend/` (with the venv active): `pytest` (**117 tests**, offline).
+
+**Enable live Gemini chat (optional):** copy `backend/.env.example` to `backend/.env` and set
+`GEMINI_API_KEY` (a standard AI Studio key, `AIza…`, from https://aistudio.google.com/apikey;
+optionally `GEMINI_MODEL`, default `gemini-flash-latest`). The chat then phrases replies with
+Gemini, **grounded** in the customer's real data — the numeral validator still rejects any
+figure the engine didn't produce, and it falls back to offline templates if the key is
+absent/invalid or quota is exhausted. Other flags: `ENABLE_TTS=1` (neural voice),
+`ADVISORY_MODE=info_only` (governance kill-switch).
 
 *Prototype cost: ₹0 · Submission: 2026-07-13 · IDBI Innovate 2026, Track 01 — Wealth Advisory.*

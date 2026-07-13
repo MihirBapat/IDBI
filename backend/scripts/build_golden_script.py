@@ -19,7 +19,9 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/ on path
 
 os.environ["DHANSAARTHI_DB"] = ":memory:"
-os.environ.pop("GEMINI_API_KEY", None)
+# Force offline/template mode: empty (but present) so the lifespan .env loader
+# (override=False) won't re-enable Gemini, keeping this script deterministic.
+os.environ["GEMINI_API_KEY"] = ""
 os.environ.pop("ENABLE_TTS", None)
 
 from starlette.testclient import TestClient  # noqa: E402
