@@ -71,9 +71,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Allowed browser origins. Local dev is always allowed; extra origins (e.g. the
+# deployed Vercel URL) come from ALLOWED_ORIGINS (comma-separated). Any
+# *.vercel.app preview/prod deploy is allowed via regex so links keep working.
+_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"] + [
+    o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
