@@ -41,7 +41,23 @@ async def lifespan(_app: FastAPI):
     except Exception:
         pass
     store.init()
+    _warm_gemini()  # prime the transport channel so the first turn isn't cold
     yield
+
+
+def _warm_gemini() -> None:
+    """Fire a tiny Gemini call in the background to warm the connection."""
+    if not _gemini_on():
+        return
+    import threading
+
+    def _warm():
+        try:
+            narrator._gemini_generate("You are a helper.", "Say ok.")
+        except Exception:
+            pass
+
+    threading.Thread(target=_warm, daemon=True).start()
 
 
 def _gemini_on() -> bool:

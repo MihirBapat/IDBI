@@ -163,13 +163,35 @@ def _gemini_model() -> str:
     return os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 
 
-def _gemini_generate(system: str, user: str) -> str:  # pragma: no cover - network
-    """Single grounded Gemini call for the conversational chat."""
-    import google.generativeai as genai
+def _gemini_timeout() -> float:
+    return float(os.environ.get("GEMINI_TIMEOUT", "12"))
 
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    model = genai.GenerativeModel(_gemini_model(), system_instruction=system)
-    resp = model.generate_content(user)
+
+# Cache the configured model so the transport channel stays warm across turns.
+_MODEL_CACHE: dict = {}
+
+
+def _gemini_client(system: str):  # pragma: no cover - network
+    key = (_gemini_model(), system)
+    model = _MODEL_CACHE.get(key)
+    if model is None:
+        import google.generativeai as genai
+
+        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+        model = genai.GenerativeModel(
+            _gemini_model(),
+            system_instruction=system,
+            # Short replies generate faster; keep it to a few sentences.
+            generation_config={"max_output_tokens": 160, "temperature": 0.5},
+        )
+        _MODEL_CACHE[key] = model
+    return model
+
+
+def _gemini_generate(system: str, user: str) -> str:  # pragma: no cover - network
+    """Single grounded Gemini call, hard-bounded by GEMINI_TIMEOUT seconds."""
+    model = _gemini_client(system)
+    resp = model.generate_content(user, request_options={"timeout": _gemini_timeout()})
     return resp.text
 
 
@@ -190,8 +212,10 @@ def converse(user_text: str, context: str, claimset: list[str], lang: str = "en"
     Uses Gemini to phrase a natural answer to the customer's actual message, but
     strictly grounded in ``context`` (their real financial facts + engine
     recommendations). The numeral validator enforces that no figure outside
-    ``claimset`` survives — one retry, then ``None`` so the caller falls back to
-    the deterministic template. Returns ``None`` whenever Gemini is unavailable.
+    ``claimset`` survives. A single time-bounded attempt (no retry, to keep
+    latency low); on timeout, error, or a numeral escape it returns ``None`` and
+    the caller falls back instantly to the deterministic template. Returns
+    ``None`` whenever Gemini is unavailable.
     """
     if not os.environ.get("GEMINI_API_KEY"):
         return None
@@ -215,13 +239,10 @@ def converse(user_text: str, context: str, claimset: list[str], lang: str = "en"
             + f"Customer: {user_text}\nSaarthi:")
 
     try:
-        for _ in range(2):  # initial + one retry
-            candidate = _clean(_gemini_generate(system, user))
-            if validate(candidate, claimset):
-                return candidate
+        candidate = _clean(_gemini_generate(system, user))
+        return candidate if validate(candidate, claimset) else None
     except Exception:
         return None
-    return None
 
 
 def narrate(rec: Recommendation, lang: str = "en", mode: Optional[str] = None) -> str:
