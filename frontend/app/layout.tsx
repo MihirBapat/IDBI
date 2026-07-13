@@ -16,9 +16,12 @@ export const viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // suppressHydrationWarning: browser extensions (Dark Reader, Grammarly, …)
+  // inject attributes on <html>/<body> before hydration; those mismatches are
+  // harmless and outside our control.
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
