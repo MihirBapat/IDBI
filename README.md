@@ -173,7 +173,9 @@ Run the test suite from `backend/` (with the venv active): `pytest` (**117 tests
 optionally `GEMINI_MODEL`, default `gemini-flash-latest`). The chat then phrases replies with
 Gemini, **grounded** in the customer's real data — the numeral validator still rejects any
 figure the engine didn't produce, and it falls back to offline templates if the key is
-absent/invalid or quota is exhausted. Other flags: `ENABLE_TTS=1` (neural voice),
-`ADVISORY_MODE=info_only` (governance kill-switch).
+absent/invalid, quota is exhausted, or the call exceeds `GEMINI_TIMEOUT` seconds (default 12;
+a single attempt, no retry, so chat latency stays bounded and a startup warm-up absorbs the
+cold call). Other flags: `ENABLE_TTS=1` (neural voice), `ADVISORY_MODE=info_only` (governance
+kill-switch).
 
 *Prototype cost: ₹0 · Submission: 2026-07-13 · IDBI Innovate 2026, Track 01 — Wealth Advisory.*
